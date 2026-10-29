@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# docker compose up -d   →  http://localhost:8080  (login admin / admin, change it)
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: simple_erp
+      MARIADB_USER: simple_erp
+      MARIADB_PASSWORD: ${DB_PASSWORD:-simple_erp}
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - db:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/demo.sql:/docker-entrypoint-initdb.d/02-demo.sql:ro
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: ${DB_PASSWORD:-simple_erp}
+      SHOP_NAME: ${SHOP_NAME:-Example Shop}
+      TZ: ${TZ:-Europe/Madrid}
+    volumes:
+      - config:/var/www/conf
+      - pdf:/var/www/web/pdf
+    depends_on: [db]
+
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./web:/var/www/web:ro
+      - pdf:/var/www/web/pdf:ro
+    depends_on: [php]
+
+  # background jobs of the scale: labels, PDFs, Telegram/e-mail (scale/p.php every 10 s)
+  worker:
+    image: curlimages/curl:8.10.1
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c", "while true; do curl -s -o /dev/null 'http://web/scale/p.php?ID=1'; sleep 10; done"]
+    depends_on: [web]
+
+volumes:
+  db:
+  config:
+  pdf:

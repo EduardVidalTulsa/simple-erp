@@ -1,0 +1,8 @@
+{
+    "require": {
+        "mike42/escpos-php": "^3.0",
+        "phpmailer/phpmailer": "^6.5",
+        "phpoffice/phpspreadsheet": "^1.28",
+        "endroid/qr-code": "^4.8"
+    }
+}

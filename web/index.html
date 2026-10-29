@@ -1,0 +1,127 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>simple-erp</title>
+<meta name="description" content="A small ERP for shops that sell by weight: prices, scale, sales documents and PDFs.">
+<style>
+  :root {
+    --bg: #faf7f2; --surface: #ffffff; --text: #2b2520; --muted: #6e655c; --line: #e6dfd5;
+    --accent: #8a5a2b; --accent-soft: #f3e7d8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1b1815; --surface: #24201c; --text: #ece6de; --muted: #a59a8e; --line: #3a332c;
+            --accent: #d9a46a; --accent-soft: #3a2e22; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 20px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .brand { font-weight: 700; font-size: 1.15rem; letter-spacing: .01em; }
+  .brand span { color: var(--accent); }
+  .lang button { border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+                 padding: 4px 10px; border-radius: 6px; cursor: pointer; font: inherit; font-size: .85rem; }
+  .lang button[aria-pressed="true"] { color: var(--text); border-color: var(--accent); }
+  .hero { padding: 40px 0 28px; }
+  .hero h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.15; margin: 0 0 12px; }
+  .hero p { color: var(--muted); font-size: 1.1rem; max-width: 640px; margin: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 28px 0; }
+  a.card { display: block; text-decoration: none; color: inherit; background: var(--surface);
+           border: 1px solid var(--line); border-radius: 12px; padding: 18px; transition: border-color .15s, transform .15s; }
+  a.card:hover, a.card:focus-visible { border-color: var(--accent); transform: translateY(-2px); outline: none; }
+  .card .icon { font-size: 1.6rem; }
+  .card h2 { font-size: 1.1rem; margin: 6px 0 4px; }
+  .card p { margin: 0; color: var(--muted); font-size: .95rem; }
+  section.features { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  section.features h3 { margin: 0 0 8px; font-size: 1rem; }
+  section.features ul { margin: 0; padding-left: 20px; color: var(--muted); }
+  section.features li { margin: 4px 0; }
+  footer { padding: 28px 0 36px; color: var(--muted); font-size: .9rem; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  footer a { color: var(--accent); }
+  [data-l] { display: none; }
+  html[lang="ca"] [data-l="ca"], html[lang="en"] [data-l="en"] { display: revert; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">simple<span>-erp</span></div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-set="ca" aria-pressed="true">Català</button>
+      <button type="button" data-set="en" aria-pressed="false">English</button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1 data-l="ca">Un ERP petit per a botigues que venen a pes</h1>
+    <h1 data-l="en">A small ERP for shops that sell by weight</h1>
+    <p data-l="ca">Tarifes, bàscula amb tiquets i etiquetes, albarans, factures i pressupostos en PDF. Pensat per funcionar dins la xarxa de la botiga, en un ordinador petit o en una Raspberry Pi.</p>
+    <p data-l="en">Price lists, a touch-screen scale with receipts and labels, delivery notes, invoices and quotes as PDF. Made to run inside the shop network, on a small PC or a Raspberry Pi.</p>
+  </div>
+
+  <nav class="grid">
+    <a class="card" href="scale/">
+      <div class="icon" aria-hidden="true">⚖️</div>
+      <h2 data-l="ca">Bàscula</h2><h2 data-l="en">Scale</h2>
+      <p data-l="ca">Venda a pes o per unitats, tiquet tèrmic, etiquetes de preu i tancament de caixa.</p>
+      <p data-l="en">Selling by weight or by unit, thermal receipts, price labels and cash closing.</p>
+    </a>
+    <a class="card" href="preus/">
+      <div class="icon" aria-hidden="true">🏷️</div>
+      <h2 data-l="ca">Preus</h2><h2 data-l="en">Prices</h2>
+      <p data-l="ca">Fitxes d'article, preu de cost i quatre tarifes, famílies, IVA i historial de preus.</p>
+      <p data-l="en">Product records, cost price and four price levels, families, VAT and price history.</p>
+    </a>
+    <a class="card" href="relacions/">
+      <div class="icon" aria-hidden="true">📄</div>
+      <h2 data-l="ca">Relacions</h2><h2 data-l="en">Documents</h2>
+      <p data-l="ca">Albarans, factures, pressupostos, comandes i traspassos entre botigues, amb PDF.</p>
+      <p data-l="en">Delivery notes, invoices, quotes, orders and transfers between shops, with PDFs.</p>
+    </a>
+  </nav>
+
+  <section class="features">
+    <h3 data-l="ca">Què fa</h3><h3 data-l="en">What it does</h3>
+    <ul data-l="ca">
+      <li>Diverses botigues i diversos venedors a la mateixa base de dades.</li>
+      <li>Tiquets per impressora tèrmica ESC/POS (USB o xarxa) i etiquetes amb codi QR.</li>
+      <li>PDF dels documents amb LaTeX; enviament per correu, Telegram o WhatsApp si es configura.</li>
+      <li>Recàrrec d'equivalència, tarifes per client i caixer automàtic CashKeeper.</li>
+    </ul>
+    <ul data-l="en">
+      <li>Several shops and shop assistants on the same database.</li>
+      <li>ESC/POS thermal receipts (USB or network) and labels with QR codes.</li>
+      <li>Document PDFs made with LaTeX; sent by e-mail, Telegram or WhatsApp when configured.</li>
+      <li>Spanish equivalence surcharge, per-customer prices and CashKeeper cash machines.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>GPL-3.0-or-later</span>
+    <a href="https://github.com/EduardVidalTulsa/simple-erp" data-l="ca">Codi a GitHub</a>
+    <a href="https://github.com/EduardVidalTulsa/simple-erp" data-l="en">Source on GitHub</a>
+  </footer>
+</div>
+<script>
+  (function () {
+    var pref = null;
+    try { pref = localStorage.getItem('simple-erp-lang'); } catch (e) {}
+    if (!pref) pref = (navigator.language || 'ca').slice(0, 2) === 'ca' ? 'ca' : 'en';
+    function set(l) {
+      document.documentElement.lang = l;
+      document.querySelectorAll('.lang button').forEach(function (b) {
+        b.setAttribute('aria-pressed', b.dataset.set === l ? 'true' : 'false');
+      });
+      try { localStorage.setItem('simple-erp-lang', l); } catch (e) {}
+    }
+    document.querySelectorAll('.lang button').forEach(function (b) {
+      b.addEventListener('click', function () { set(b.dataset.set); });
+    });
+    set(pref);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+keys.php
+vendor/
+web/vendor/
+web/composer.json
+composer.lock
+web/scale/pdf/
+web/pdf/*.pdf
+*.lp
+*.tex
+*.aux
+*.log
+*.ps
