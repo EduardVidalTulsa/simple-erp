@@ -140,6 +140,12 @@ $printer -> text("Gràcies per la vostra compra\n");
 	if (correuvalid($r['email'])){
 		$printer -> text("Us hem enviat copia en pdf de la factura a\n {$r['email']}\n");
 	}
+// peu: rebuts del TPV del banc (QR llegit a la bàscula) amb referència, targeta i QR
+try {
+	tpv_imprimeix_peu($printer, $r, $year, $ID_Empresa, $link);
+} catch (Throwable $e) {
+	debugtelegram("tiquet.php rebut TPV: ".$e->getMessage(), $_SERVER['HTTP_HOST']);
+}
 //linees borrades
 if($r['deletedlines']>0){
 	//$printer -> cut(66);

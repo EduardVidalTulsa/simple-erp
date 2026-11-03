@@ -14,6 +14,15 @@ if($_REQUEST['key']==$tlineakey){
 }
 if($login){
 	$pes=mysql1r("Select pes from ultimpes where ID=$idbascula",$link);
+	// QR del tiquet del TPV del banc: en prémer Intro (o el lector) es cobra la venda
+	if(tpv_qr_url($_REQUEST['ID'] ?? '') !== false){
+		caixa_tlinea('caixadescripcio');
+		caixa_tlinea('Descripcio');
+		echo "Tiquet del TPV llegit, cobrant amb targeta...";
+		tdiv();tdiv();
+		$link->close();
+		die;
+	}
 	// el mateix parser que en prémer Intro (case_tracto), perquè la previsualització no enganyi
 	$p=parse_magic_code($_REQUEST['ID'],'scale');
 	$abono=$p['abono'] ?? '';

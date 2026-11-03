@@ -13,7 +13,7 @@ family business with several shops; this is a cleaned-up copy of its code.
 
 | Module | What it does |
 |---|---|
-| `web/scale/` | Touch-screen scale: sell by weight or unit, ESC/POS receipts (USB or network printer), price and product labels with QR code (inkscape), cash closing, staff clock-in, CashKeeper cash machines |
+| `web/scale/` | Touch-screen scale: sell by weight or unit, ESC/POS receipts (USB or network printer), price and product labels with QR code (inkscape), cash closing, staff clock-in, CashKeeper cash machines, card payments from the QR of the bank terminal's digital receipt (Redsys) |
 | `web/preus/` | Price management: product records, cost price and four price levels, families, VAT, price history |
 | `web/relacions/` | Sales documents: delivery notes, invoices, quotes, orders, inventories, transfers; PDF with LaTeX, links by e-mail, SMS or WhatsApp |
 | `web/pdf/` | Public access to the generated PDFs |
@@ -22,6 +22,15 @@ family business with several shops; this is a cleaned-up copy of its code.
 Background jobs (labels, PDFs, Telegram and e-mail notifications) run in `web/scale/p.php`,
 which must be called every few seconds by one machine (the Docker `worker` service or the
 `simple-erp-worker` systemd unit do it).
+
+**Card terminal QR (Redsys digital receipt).** When the bank card terminal shows the QR of its
+digital receipt, read it with the scale's barcode reader (in the code field, or in the subtotal
+screen of a sale). The scale downloads the PDF, reads the amount, reference and masked card
+number, stores it in `YYYY_Empresa_N_pdf_tiquettpv` (created automatically, one table per year)
+and closes the open invoice or relation-to-assign with the same amount as paid by card (the same
+as the card button). If several sales have that amount it asks which one; if none, the receipt
+is stored without a sale and can be read again later. The scale receipt prints the reference, the
+card number and the QR at the bottom. Needs `pdftotext` (poppler-utils) and outgoing HTTPS.
 
 ## Quick start with Docker
 
@@ -93,6 +102,13 @@ volum `config`.
 `preus` (fitxes, tarifes, famílies, IVA, historial), `relacions` (albarans, factures,
 pressupostos… amb PDF) i `pdf`. Les feines de fons les fa `scale/p.php`, que una sola màquina ha
 de cridar cada pocs segons.
+
+**QR del TPV (tiquet digital de Redsys):** si es llegeix amb el lector de la bàscula el QR que
+mostra el TPV del banc, la bàscula baixa el PDF, en treu l'import, la referència i la targeta, el
+desa a `ANY_Empresa_N_pdf_tiquettpv` (es crea sola, una per any) i tanca com a cobrada amb targeta
+la factura o relation_to_assing oberta amb el mateix import. Si n'hi ha més d'una, pregunta quina;
+si no n'hi ha cap, el desa sense venda. Al peu del tiquet s'imprimeix la referència, la targeta i
+el QR. Cal `pdftotext` (poppler-utils) i sortida HTTPS.
 
 **Avís:** és codi PHP antic i pràctic, pensat per a la xarxa de la botiga. No el publiqueu a
 Internet tal com és.

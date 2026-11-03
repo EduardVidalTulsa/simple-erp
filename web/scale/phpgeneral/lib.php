@@ -291,6 +291,59 @@ function detallrelacio($uuid,$ID_Empresa,$year,$link,$debug=false){
     $index_relacio=rel2rel($index_relacio,$link);
     return $index_relacio;
 }
+/**
+ * Tanca una relació oberta com a cobrada amb la via de pagament $via (taula Pagament).
+ * Si no és una factura (3) ni bàscula heredada (9), la passa al tipus de relació de la via
+ * de pagament (factura, o tiquet/proforma per a les empreses amb mxgestio) amb un ID nou.
+ * La fan servir total.php i el cobrament amb el QR del TPV (tiquettpv.php).
+ * Retorna $r actualitzada (ID, ID_tipus_relacio, tipus_relacio, ID_Pagament) o false si falla.
+ */
+function tanca_relacio_pagament($r,$via,$link,$prefixrelacio,$ID_Empresa){
+	global $tanca_relacio_error;
+	$tanca_relacio_error='';
+	$via=(int)$via;
+	$qupdate_lines='';
+	if(($r['ID_tipus_relacio']!=3)and($r['ID_tipus_relacio']!=9)and($r['relacio_oberta']==1)){//assignem el tipus de relació depenent de quina sigui la forma de "pagament"
+		// si és una factura no es pot canviar de forma de tipus de relació
+		//es pot triar entre factura (si paguen)o altres tipus relacions proforma, albarà, pressupost...
+		//possiblement si hi ha molta i molta gent treballant, potser faria falta bloquejar temporalment index_relacio
+		//per que no assignin el mateix ID a la vegada.
+		$NEW_tipus_relacio=mysql1r("select ID_tipus_relacio from Pagament where ID='$via'",$link);
+		$ID_Empresa_a_mxgestio=mysql1r("SELECT `ID_Empresa_a_mxgestio` FROM `Empresa` WHERE `ID` = '$ID_Empresa'",$link);
+		if(($ID_Empresa_a_mxgestio=='1')&&($NEW_tipus_relacio=='3')&&($r['phone']==""))$NEW_tipus_relacio=10;//si es un tiquet, sera tiquet
+		if(($ID_Empresa_a_mxgestio=='1')&&($NEW_tipus_relacio=='3')&&($r['phone']!=""))$NEW_tipus_relacio=4; //si es un cient connegut, vodra factura proforma
+		$link->query("lock tables `{$prefixrelacio}index_relacio` write ,`{$prefixrelacio}line`   write ");
+		$NEWID=mysql1r("select COALESCE(MAX(ID), 0)+1 from `{$prefixrelacio}index_relacio` where ID_tipus_relacio='$NEW_tipus_relacio' ",$link);
+		$qupdate_lines="UPDATE `{$prefixrelacio}line` SET`ID` = '$NEWID',`ID_tipus_relacio` = '$NEW_tipus_relacio' WHERE `ID`='{$r['ID']}' AND `ID_tipus_relacio` = '{$r['ID_tipus_relacio']}' ";
+		//modifico els preus a les comandes per que no surtin valorades
+		if($NEW_tipus_relacio=='7')$qupdate_lines="UPDATE `{$prefixrelacio}line` SET`ID` = '$NEWID',`ID_tipus_relacio` = '$NEW_tipus_relacio', `cost` = '0' WHERE `ID`='{$r['ID']}' AND `ID_tipus_relacio` = '{$r['ID_tipus_relacio']}'  ";
+	}
+	else {
+		$link->query("lock tables `{$prefixrelacio}index_relacio` write ,`{$prefixrelacio}line`   write ");
+		$NEW_tipus_relacio=$r['ID_tipus_relacio'];
+		$NEWID=$r['ID'];
+	}
+	$qtanca="UPDATE `{$prefixrelacio}index_relacio` SET `relacio_oberta` = '0', `ID_Pagament`='$via', `ID`='$NEWID',`ID_tipus_relacio` ='$NEW_tipus_relacio'
+		WHERE `ID`='{$r['ID']}' AND `ID_tipus_relacio` = '{$r['ID_tipus_relacio']}' ";
+	if(!$link->query($qtanca)){
+		$tanca_relacio_error=mysqli_error($link)." no l'he trobada $qtanca";
+		$link->query("unlock tables");
+		return false;
+	}
+	if($qupdate_lines!="")if(!$link->query($qupdate_lines)){
+		$tanca_relacio_error=mysqli_error($link)." error assignant línees";
+		$link->query("unlock tables");
+		return false;
+	}
+	$link->query("unlock tables");
+	$r['ID_Pagament']=$via;
+	$r['relacio_oberta']=0;
+	$r['ID_tipus_relacio']=$NEW_tipus_relacio;
+	$r['ID']=$NEWID;
+	$r['tipus_relacio']['ID']=$NEW_tipus_relacio;
+	$r['tipus_relacio']['Value']=mysql1r("SELECT Value from tipus_relacio where ID='$NEW_tipus_relacio'",$link);
+	return $r;
+}
 function asigna_relacio_per_telefon($r,$tel,$ID_Empresa,$year,$link,$debug=false){
 	$a=false;
 	if($debug)pre($r);
@@ -1959,6 +2012,12 @@ function case_tracto($ID, $link, $scale_uri, $idbascula, $w, $h, $decimalsing, $
     
     $repesa = 8;
     $tempsrepesa = 0.7;
+    // QR del tiquet digital del TPV del banc: el cobra (tiquettpv.php)
+    if(function_exists('tpv_qr_url') && tpv_qr_url($ID) !== false) {
+        $link->close();
+        header("Location: {$scale_uri}tiquettpv.php?qr=".urlencode($ID));
+        die;
+    }
     // Descompte -10 (comprovar ABANS de parsejar perquè el parser interpreta - com abono)
     if($ID === '--10') {
         $r = aplicar_descompte_ultima_linia($link, $scale_uri);
@@ -2858,6 +2917,11 @@ function case_subtotal($ID_venedor, $link, $scale_uri, $w, $h, $prefixrelacio, $
 function case_tracto_subtotal($link, $scale_uri, $prefixrelacio) {
     global $ID_Empresa;
     
+    // QR del TPV llegit al subtotal: si l'import quadra, cobra aquesta relació
+    if(function_exists('tpv_qr_url') && tpv_qr_url($_REQUEST['magic'] ?? '') !== false) {
+        header("Location: {$scale_uri}tiquettpv.php?qr=".urlencode($_REQUEST['magic'])."&uuid=".urlencode($_REQUEST['uuid'] ?? ''));
+        die;
+    }
     // Si magic està buit i viapagament és 0 o buit, tornar al case per defecte (pesa)
     $_REQUEST['magic'] = str_replace(" ", "", ($_REQUEST['magic'] ?? ''));
     $vp = $_REQUEST['viapagament'] ?? '0';

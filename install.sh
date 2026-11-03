@@ -12,9 +12,9 @@ DB=simple_erp
 
 apt-get update
 apt-get install -y --no-install-recommends nginx mariadb-server php-fpm php-mysql php-zip php-gd \
-    php-mbstring php-xml php-intl composer texinfo texlive-latex-base texlive-latex-recommended \
+    php-mbstring php-xml php-intl php-curl composer texinfo texlive-latex-base texlive-latex-recommended \
     texlive-latex-extra texlive-fonts-recommended texlive-lang-spanish texlive-xetex inkscape \
-    cups-client openssh-client curl
+    poppler-utils cups-client openssh-client curl
 
 mkdir -p "$DEST"
 cp -r web keys.example.php composer.json db "$DEST/"

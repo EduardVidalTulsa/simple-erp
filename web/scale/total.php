@@ -12,40 +12,11 @@ $r=detallrelacio($_REQUEST['uuid'],$ID_Empresa,date("Y"),$link);
 //  case 4: //tarjeta no presencial
 //  case 5: //coinbas c
 
-$r['ID_Pagament']=$_REQUEST['via'];
-
-if(($r['ID_tipus_relacio']!=3)and($r['ID_tipus_relacio']!=9)and($r['relacio_oberta']==1)){//assignem el tipus de relació depenent de quina sigui la forma de "pagament"
-        // si és una factura no es pot canviar de forma de tipus de relació 
-	//es pot triar entre factura (si paguen)o altres tipus relacions proforma, albarà, pressupost...
-	//possiblement si hi ha molta i molta gent treballant, potser faria falta bloquejar temporalment index_relacio 
-	//per que no assignin el mateix ID a la vegada. 
-	$NEW_tipus_relacio=mysql1r("select ID_tipus_relacio from Pagament where ID='{$_REQUEST['via']}'",$link);
-	$ID_Empresa_a_mxgestio=mysql1r("SELECT `ID_Empresa_a_mxgestio` FROM `Empresa` WHERE `ID` = '$ID_Empresa'",$link);
-	if(($ID_Empresa_a_mxgestio=='1')&&($NEW_tipus_relacio=='3')&&($r['phone']==""))$NEW_tipus_relacio=10;//si es un tiquet, sera tiquet
-	if(($ID_Empresa_a_mxgestio=='1')&&($NEW_tipus_relacio=='3')&&($r['phone']!=""))$NEW_tipus_relacio=4; //si es un cient connegut, vodra factura proforma
-	$link->query("lock tables `{$prefixrelacio}index_relacio` write ,`{$prefixrelacio}line`   write ");
-	$NEWID=mysql1r("select COALESCE(MAX(ID), 0)+1 from `{$prefixrelacio}index_relacio` where ID_tipus_relacio='$NEW_tipus_relacio' ",$link);
-	$qupdate_lines="UPDATE `{$prefixrelacio}line` SET`ID` = '$NEWID',`ID_tipus_relacio` = '$NEW_tipus_relacio' WHERE `ID`='{$r['ID']}' AND `ID_tipus_relacio` = '{$r['ID_tipus_relacio']}' ";
-	//modifico els preus a les comandes per que no surtin valorades
-	if($NEW_tipus_relacio=='7')$qupdate_lines="UPDATE `{$prefixrelacio}line` SET`ID` = '$NEWID',`ID_tipus_relacio` = '$NEW_tipus_relacio', `cost` = '0' WHERE `ID`='{$r['ID']}' AND `ID_tipus_relacio` = '{$r['ID_tipus_relacio']}'  ";
-}
-else {
-	$link->query("lock tables `{$prefixrelacio}index_relacio` write ,`{$prefixrelacio}line`   write ");
-	$NEW_tipus_relacio=$r['ID_tipus_relacio'];
-	$NEWID=$r['ID'];
-}
-
-$qtanca="UPDATE `{$prefixrelacio}index_relacio` SET `relacio_oberta` = '0', `ID_Pagament`='{$_REQUEST['via']}', `ID`='$NEWID',`ID_tipus_relacio` ='$NEW_tipus_relacio'
-		WHERE `ID`='{$r['ID']}' AND `ID_tipus_relacio` = '{$r['ID_tipus_relacio']}' ";
-if(!$link->query($qtanca)) {error(mysqli_error($link));echo "no l'he trobada $qtanca ";die;}
-if($qupdate_lines!="")if(!$link->query($qupdate_lines)) {error(mysqli_error($link));echo "error assignant línees";die;}
-$link->query("unlock tables");
+// tanca la relació (i la passa a factura si era relation_to_assing), comú amb el QR del TPV
+$r=tanca_relacio_pagament($r,$_REQUEST['via'],$link,$prefixrelacio,$ID_Empresa);
+if($r===false){error($tanca_relacio_error);echo $tanca_relacio_error;die;}
 
 $r['email']==""?:$r['email']=urldecode($r['email']);
-$r['ID_tipus_relacio']=$NEW_tipus_relacio;
-$r['ID']=$NEWID;
-$r['tipus_relacio']['ID']=$NEW_tipus_relacio;
-$r['tipus_relacio']['Value']=mysql1r("SELECT Value from tipus_relacio where ID='$NEW_tipus_relacio'",$link);
 
 if(($_SESSION['Empresa']['cashkeeper']!="") && ($r['ID_Pagament']==1)) {
 

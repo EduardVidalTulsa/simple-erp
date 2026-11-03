@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 FROM php:8.3-fpm-bookworm
 
-# LaTeX for the PDF documents, inkscape for the labels, ssh/scp for remote printers
+# LaTeX for the PDF documents, inkscape for the labels, ssh/scp for remote printers,
+# poppler-utils (pdftotext) to read the digital receipts of the bank card terminal
 RUN apt-get update && apt-get install -y --no-install-recommends \
         texinfo texlive-latex-base texlive-latex-recommended texlive-latex-extra \
         texlive-fonts-recommended texlive-lang-spanish texlive-xetex \
-        inkscape cups-client openssh-client curl unzip libzip-dev libpng-dev libfreetype6-dev libicu-dev \
+        inkscape poppler-utils cups-client openssh-client curl unzip libzip-dev libpng-dev libfreetype6-dev libicu-dev \
     && docker-php-ext-configure gd --with-freetype \
     && docker-php-ext-install -j"$(nproc)" mysqli zip gd intl \
     && rm -rf /var/lib/apt/lists/*
