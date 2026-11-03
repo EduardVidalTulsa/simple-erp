@@ -158,7 +158,7 @@ function tpv_busca_relacions($import, $link, $prefixrelacio, $ID_Empresa) {
 
 /**
  * Vendes que ja s'han cobrat amb el botó de targeta (sense rebut lligat) abans de llegir el QR:
- * tancades avui amb ID_Pagament=targeta, amb alguna línia de les últimes 2 hores, i el mateix import.
+ * tancades avui amb ID_Pagament=targeta, amb alguna línia dels últims 30 minuts, i el mateix import.
  */
 function tpv_busca_cobrades($import, $link, $prefixrelacio, $ID_Empresa) {
 	$taula = tpv_taula($link, $ID_Empresa);
@@ -167,7 +167,7 @@ function tpv_busca_cobrades($import, $link, $prefixrelacio, $ID_Empresa) {
 		LEFT JOIN `$taula` t ON t.uuid = i.uuid
 		WHERE i.relacio_oberta=0 AND i.ID_Pagament='" . TPV_VIA_TARGETA . "' AND i.data=CURDATE() AND t.ID IS NULL
 		AND EXISTS (SELECT 1 FROM `{$prefixrelacio}line` l WHERE l.ID=i.ID AND l.ID_tipus_relacio=i.ID_tipus_relacio
-			AND l.hidden_now >= NOW() - INTERVAL 2 HOUR)");
+			AND l.hidden_now >= NOW() - INTERVAL 30 MINUTE)");
 	while($row = $q->fetch_assoc()) {
 		$r = detallrelacio($row['uuid'], $ID_Empresa, date('Y'), $link);
 		if(!is_array($r) || $r['activelines'] < 1) continue;
