@@ -265,8 +265,41 @@ function tpv_imprimeix_peu($printer, $r, $year, $ID_Empresa, $link) {
 		$printer->text("Pagat amb targeta " . trim("{$t['marca']} {$t['targeta']}") . "\n");
 		$printer->text("Ref.: {$t['referencia']}  " . number_format($t['import'], 2, $decimalsing, $thousandsing) . " EUR\n");
 		if($t['datetime']) $printer->text(date('d/m/Y H:i:s', strtotime($t['datetime'])) . "\n");
-		$printer->qrCode($t['url'], \Mike42\Escpos\Printer::QR_ECLEVEL_L, 5);
+		tpv_imprimeix_qr($printer, $t['url']);
 		$printer->text("Rebut del banc\n");
+	}
+}
+
+// El QR es genera amb Endroid i s'imprimeix com a imatge raster: no depèn que la impressora
+// entengui el QR natiu (GS ( k). Es fa directament de la matriu de mòduls, sense PNG ni GD
+// (el carregador GD d'escpos-php no funciona amb PHP 8). Si falla, prova el QR natiu.
+function tpv_imprimeix_qr($printer, $url, $amplada = 360) {
+	try {
+		$qr = \Endroid\QrCode\QrCode::create($url)
+			->setErrorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow());
+		$m = (new \Endroid\QrCode\Bacon\MatrixFactory())->create($qr);
+		$n = $m->getBlockCount();
+		$marge = 4;                                               // zona blanca en mòduls
+		$p = max(2, min(8, intdiv($amplada, $n + 2 * $marge)));   // punts per mòdul
+		$costat = ($n + 2 * $marge) * $p;
+		$dades = '';
+		for($y = -$marge; $y < $n + $marge; $y++) {
+			$linia = '';
+			for($x = -$marge; $x < $n + $marge; $x++)
+				$linia .= str_repeat(($y >= 0 && $x >= 0 && $y < $n && $x < $n && $m->getBlockValue($y, $x)) ? '1' : '0', $p);
+			$dades .= str_repeat($linia, $p);
+		}
+		$img = new class($costat, $dades) extends \Mike42\Escpos\EscposImage {
+			public function __construct($costat, $dades) {
+				parent::__construct(null, false);
+				$this->setImgWidth($costat);
+				$this->setImgHeight($costat);
+				$this->setImgData($dades);
+			}
+		};
+		$printer->bitImage($img);
+	} catch(Throwable $e) {
+		$printer->qrCode($url, \Mike42\Escpos\Printer::QR_ECLEVEL_L, 5);
 	}
 }
 ?>
