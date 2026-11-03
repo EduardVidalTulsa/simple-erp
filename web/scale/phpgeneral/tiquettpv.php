@@ -156,6 +156,44 @@ function tpv_busca_relacions($import, $link, $prefixrelacio, $ID_Empresa) {
 	return $trobades;
 }
 
+/**
+ * Vendes que ja s'han cobrat amb el botó de targeta (sense rebut lligat) abans de llegir el QR:
+ * tancades avui amb ID_Pagament=targeta, amb alguna línia de les últimes 2 hores, i el mateix import.
+ */
+function tpv_busca_cobrades($import, $link, $prefixrelacio, $ID_Empresa) {
+	$taula = tpv_taula($link, $ID_Empresa);
+	$trobades = [];
+	$q = $link->query("SELECT i.uuid FROM `{$prefixrelacio}index_relacio` i
+		LEFT JOIN `$taula` t ON t.uuid = i.uuid
+		WHERE i.relacio_oberta=0 AND i.ID_Pagament='" . TPV_VIA_TARGETA . "' AND i.data=CURDATE() AND t.ID IS NULL
+		AND EXISTS (SELECT 1 FROM `{$prefixrelacio}line` l WHERE l.ID=i.ID AND l.ID_tipus_relacio=i.ID_tipus_relacio
+			AND l.hidden_now >= NOW() - INTERVAL 2 HOUR)");
+	while($row = $q->fetch_assoc()) {
+		$r = detallrelacio($row['uuid'], $ID_Empresa, date('Y'), $link);
+		if(!is_array($r) || $r['activelines'] < 1) continue;
+		if(abs(round($r['Total'], 2) - round($import, 2)) < 0.005) { $r['ja_cobrada'] = true; $trobades[] = $r; }
+	}
+	return $trobades;
+}
+
+/** La relació encara pot rebre aquest rebut: oberta (1/3) o ja cobrada amb targeta avui i sense rebut */
+function tpv_es_candidata($r, $import, $link, $ID_Empresa) {
+	if(!is_array($r) || abs(round($r['Total'], 2) - round($import, 2)) >= 0.005) return false;
+	if($r['relacio_oberta'] == 1) return in_array($r['ID_tipus_relacio'], explode(',', TPV_TIPUS_RELACIO));
+	if($r['ID_Pagament'] != TPV_VIA_TARGETA || $r['data'] != date('Y-m-d')) return false;
+	$taula = tpv_taula($link, $ID_Empresa);
+	$uuid = $link->real_escape_string($r['uuid']);
+	return !$link->query("SELECT ID FROM `$taula` WHERE uuid='$uuid'")->fetch_row();
+}
+
+/** Lliga el rebut a una relació ja cobrada amb targeta (no la torna a tancar) */
+function tpv_lliga_rebut($r, $ID_rebut, $link, $ID_Empresa) {
+	$taula = tpv_taula($link, $ID_Empresa);
+	$stmt = $link->prepare("UPDATE `$taula` SET ID_tipus_relacio=?, ID_relacio=?, uuid=? WHERE ID=?");
+	$stmt->bind_param('iisi', $r['ID_tipus_relacio'], $r['ID'], $r['uuid'], $ID_rebut);
+	return $stmt->execute();
+}
+
 /** Rebuts del TPV lligats a una relació (per imprimir-los al peu del tiquet) */
 function tpv_rebuts_relacio($r, $year, $ID_Empresa, $link) {
 	$taula = tpv_taula($link, $ID_Empresa, $year);

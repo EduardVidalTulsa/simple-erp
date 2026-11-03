@@ -33,11 +33,24 @@ function tpv_descripcio($r) {
 		. number_format($r['Total'], 2, $decimalsing, $thousandsing) . " €");
 }
 
-function tpv_cobrat($r, $rebut) {
+// cobra la relació oberta, o si ja s'havia cobrat amb el botó de targeta, només hi lliga el rebut
+function tpv_aplica($r, $rebut) {
+	global $link, $prefixrelacio, $ID_Empresa, $tanca_relacio_error;
+	if($r['relacio_oberta'] != 1) {
+		tpv_lliga_rebut($r, $rebut['ID'], $link, $ID_Empresa);
+		tpv_cobrat($r, $rebut, "Rebut lligat (ja estava cobrada amb targeta)");
+		return;
+	}
+	$r2 = tpv_cobra_relacio($r, $rebut['ID'], $link, $prefixrelacio, $ID_Empresa);
+	if($r2 === false) tpv_pantalla("Error", htmlspecialchars($tanca_relacio_error), '#e06060', [], 0);
+	else tpv_cobrat($r2, $rebut);
+}
+
+function tpv_cobrat($r, $rebut, $titol = null) {
 	global $scale_uri, $decimalsing, $thousandsing;
 	$text = tpv_descripcio($r) . "<br/>Targeta " . htmlspecialchars(trim("{$rebut['marca']} {$rebut['targeta']}"))
 		. " · Ref. " . htmlspecialchars($rebut['referencia']);
-	tpv_pantalla("Cobrat amb targeta " . number_format($rebut['import'], 2, $decimalsing, $thousandsing) . " €", $text, '#7fc97f',
+	tpv_pantalla($titol ?? "Cobrat amb targeta " . number_format($rebut['import'], 2, $decimalsing, $thousandsing) . " €", $text, '#7fc97f',
 		[["{$scale_uri}tiquet.php?uuid={$r['uuid']}", "&#128424; Imprimir tiquet"]], 15);
 }
 
@@ -51,15 +64,10 @@ if(isset($_REQUEST['rebut'])) {
 	if(!$rebut || $rebut['uuid'] != '') {
 		tpv_pantalla("Rebut ja cobrat", "Aquest rebut ja està lligat a una venda.", '#f0a050');
 	}
-	elseif(!is_array($r) || $r['relacio_oberta'] != 1 || !in_array($r['ID_tipus_relacio'], explode(',', TPV_TIPUS_RELACIO))
-		|| abs(round($r['Total'], 2) - $rebut['import']) >= 0.005) {
+	elseif(!tpv_es_candidata($r, $rebut['import'], $link, $ID_Empresa)) {
 		tpv_pantalla("No es pot cobrar", "Aquesta venda ja no està oberta o l'import no quadra.", '#f0a050');
 	}
-	else {
-		$r2 = tpv_cobra_relacio($r, $rebut['ID'], $link, $prefixrelacio, $ID_Empresa);
-		if($r2 === false) tpv_pantalla("Error", htmlspecialchars($tanca_relacio_error), '#e06060', [], 0);
-		else tpv_cobrat($r2, $rebut);
-	}
+	else tpv_aplica($r, $rebut);
 	$link->close();
 	die;
 }
@@ -96,16 +104,14 @@ if(!tpv_es_cobrament($rebut)) {
 	die;
 }
 
-$trobades = tpv_busca_relacions($rebut['import'], $link, $prefixrelacio, $ID_Empresa);
+// obertes amb el mateix import, i les que ja s'han cobrat amb el botó de targeta abans de llegir el QR
+$trobades = array_merge(tpv_busca_relacions($rebut['import'], $link, $prefixrelacio, $ID_Empresa),
+	tpv_busca_cobrades($rebut['import'], $link, $prefixrelacio, $ID_Empresa));
 $triada = null;
 foreach($trobades as $r) if(($_REQUEST['uuid'] ?? '') !== '' && $r['uuid'] === $_REQUEST['uuid']) $triada = $r;
 if(!$triada && count($trobades) == 1) $triada = $trobades[0];
 
-if($triada) {
-	$r2 = tpv_cobra_relacio($triada, $rebut['ID'], $link, $prefixrelacio, $ID_Empresa);
-	if($r2 === false) tpv_pantalla("Error", htmlspecialchars($tanca_relacio_error), '#e06060', [], 0);
-	else tpv_cobrat($r2, $rebut);
-}
+if($triada) tpv_aplica($triada, $rebut);
 elseif(count($trobades) == 0) {
 	debugtelegram("Tiquet TPV $imp ref {$rebut['referencia']} {$rebut['targeta']}: cap venda oberta amb aquest import, desat sense venda", $_SERVER['HTTP_HOST'], $canal);
 	tpv_pantalla("Cap venda de $imp", "No hi ha cap venda oberta de $imp.<br/>He desat el rebut (Ref. " . htmlspecialchars($rebut['referencia'])
@@ -113,7 +119,8 @@ elseif(count($trobades) == 0) {
 }
 else {
 	$botons = [];
-	foreach($trobades as $r) $botons[] = ["{$scale_uri}tiquettpv.php?rebut={$rebut['ID']}&uuid={$r['uuid']}", tpv_descripcio($r)];
+	foreach($trobades as $r) $botons[] = ["{$scale_uri}tiquettpv.php?rebut={$rebut['ID']}&uuid={$r['uuid']}",
+		tpv_descripcio($r) . (!empty($r['ja_cobrada']) ? " (ja cobrada &#128179;)" : '')];
 	tpv_pantalla("Hi ha " . count($trobades) . " vendes de $imp", "Quina has cobrat?", '#ACAB00', $botons, 0);
 }
 $link->close();
