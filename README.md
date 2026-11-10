@@ -30,7 +30,9 @@ number, stores it in `YYYY_Empresa_N_pdf_tiquettpv` (created automatically, one 
 and closes the open invoice or relation-to-assign with the same amount as paid by card (the same
 as the card button). If several sales have that amount it asks which one; if none, the receipt
 is stored without a sale and can be read again later. The scale receipt prints the reference, the
-card number and the QR at the bottom. Needs `pdftotext` (poppler-utils) and outgoing HTTPS.
+card number and the QR at the bottom. The confirmation screen (print-receipt and back buttons)
+already returns to the scale's main screen on its own after 15 seconds. Needs `pdftotext`
+(poppler-utils) and outgoing HTTPS.
 
 ## Quick start with Docker
 
@@ -108,7 +110,8 @@ mostra el TPV del banc, la bàscula baixa el PDF, en treu l'import, la referènc
 desa a `ANY_Empresa_N_pdf_tiquettpv` (es crea sola, una per any) i tanca com a cobrada amb targeta
 la factura o relation_to_assing oberta amb el mateix import. Si n'hi ha més d'una, pregunta quina;
 si no n'hi ha cap, el desa sense venda. Al peu del tiquet s'imprimeix la referència, la targeta i
-el QR. Cal `pdftotext` (poppler-utils) i sortida HTTPS.
+el QR. La pantalla de confirmació (botons d'imprimir i tornar) ja torna sola a la pantalla
+principal de la bàscula al cap de 15 segons. Cal `pdftotext` (poppler-utils) i sortida HTTPS.
 
 **Avís:** és codi PHP antic i pràctic, pensat per a la xarxa de la botiga. No el publiqueu a
 Internet tal com és.
