@@ -21,7 +21,6 @@ WHERE `id_familia` = '0'
 
 TODO
 
-poder triar el camp que ordenes
 a nou.php que recordi l'ultim nou de la sessió per poder estalviar pases.
 
 */
@@ -52,6 +51,14 @@ divclass('sortir');
 	    if($_REQUEST['f']['id_familia']!='0')$_SESSION['f']['id_familia']=$_REQUEST['f']['id_familia'];
         else unset($_SESSION['f']['id_familia']);
     }
+    //ordenació de la llista, es manté a la sessió fins que es triï una altra
+    if(isset($_REQUEST['ordre']))$_SESSION['ordre']=$_REQUEST['ordre'];
+    $ordres=array(
+        'data'=>array('ordre'=>'`tarifes`.`data_hora` desc, `tarifes`.`ID`','nom'=>'Última modificació'),
+        'nom'=>array('ordre'=>'productnames.value asc, `tarifes`.`ID`','nom'=>'Nom'),
+        'pvp'=>array('ordre'=>'`tarifes`.`pvp` asc, `tarifes`.`ID`','nom'=>'PVP'),
+    );
+    $ordre=isset($ordres[$_SESSION['ordre']])?$_SESSION['ordre']:'data';
   // pre();print_r($_REQUEST);print_r($_SESSION);tpre();
 
     //formulari filtre
@@ -258,12 +265,12 @@ Tarifa 10 $pv4
 	}
 
 //     pre();print_r($_SESSION);tpre();
-	$from="	FROM `tarifes`".
-    (!isset($_SESSION['cerca'])?' where ultimpreu=1 ':",
-    productnames where `tarifes`.`ID`=productnames.ID and ( value like
+	$from="	FROM `tarifes` LEFT JOIN productnames ON productnames.ID=`tarifes`.`ID` and productnames.lang='$lang'".
+    " where ultimpreu=1".
+    (!isset($_SESSION['cerca'])?'':" and ( productnames.value like
     '%".str_replace(' ','%',$_SESSION['cerca'])."%'
     or `tarifes`.`ID` like '%".trim($_SESSION['cerca'])."%'
-    )and lang='$lang' and ultimpreu='1'").
+    )").
      //"where ultimpreu=1".
 	//($_SESSION['f']['producte']==''?'':" AND Description like '%".str_replace(' ','%',$_SESSION['f']['producte']."%'")).
 	//($_SESSION['f']['producte']==''?'':" AND ID=(select ID from productnames where value like '%".str_replace(' ','%',$_SESSION['f']['producte']."%'" )." and lang='$lang')").
@@ -277,7 +284,7 @@ Tarifa 10 $pv4
 	$pagines=max(1,ceil($total/$perpagina));
 	$pag=min(max(1,intval($_REQUEST['pag']??1)),$pagines);
 	$q="SELECT `tarifes`.`ID`,id_dealer,bool_in_bulk, cost_price, pvp,pvpi, pv1,pv1i,pv2,pv2i,pv3,pv3i,data_hora,pv4,pv4i $from
-	order by `tarifes`.`data_hora` desc, `tarifes`.`ID` limit ".(($pag-1)*$perpagina).",$perpagina";
+	order by {$ordres[$ordre]['ordre']} limit ".(($pag-1)*$perpagina).",$perpagina";
 	$paginacio=function() use ($pag,$pagines,$total){
 		$url=strtok($_SERVER['REQUEST_URI'],'?');
 		divclass('paginacio');
@@ -286,6 +293,15 @@ Tarifa 10 $pv4
 		if($pag<$pagines){a("$url?pag=".($pag+1),"següent ›");echo " ";a("$url?pag=$pagines","última »");}
 		tdiv();
 	};
+	$urlordre=strtok($_SERVER['REQUEST_URI'],'?');
+	divclass('paginacio');
+	echo 'Ordena per: ';
+	foreach($ordres as $k=>$o){
+		if($k==$ordre)echo "<b>{$o['nom']}</b>";
+		else a("$urlordre?ordre=$k",$o['nom']);
+		echo ' ';
+	}
+	tdiv();
 	$paginacio();
 
 	//$ldealer=mysql2array('select id, value from dealers ORDER by `value`',$link); l'he posat al inici de la plana
