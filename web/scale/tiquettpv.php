@@ -106,7 +106,7 @@ if(!tpv_es_cobrament($rebut)) {
 
 // obertes amb el mateix import, i les que ja s'han cobrat amb el botó de targeta abans de llegir el QR
 $trobades = array_merge(tpv_busca_relacions($rebut['import'], $link, $prefixrelacio, $ID_Empresa),
-	tpv_busca_cobrades($rebut['import'], $link, $prefixrelacio, $ID_Empresa));
+	tpv_busca_cobrades($rebut['import'], $link, $prefixrelacio, $ID_Empresa, $rebut['datetime'] ?? null));
 $triada = null;
 foreach($trobades as $r) if(($_REQUEST['uuid'] ?? '') !== '' && $r['uuid'] === $_REQUEST['uuid']) $triada = $r;
 if(!$triada && count($trobades) == 1) $triada = $trobades[0];
