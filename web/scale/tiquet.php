@@ -146,6 +146,12 @@ try {
 } catch (Throwable $e) {
 	debugtelegram("tiquet.php rebut TPV: ".$e->getMessage(), $_SERVER['HTTP_HOST']);
 }
+// peu: xecs regal gastats en aquesta venda
+try {
+	val_imprimeix_peu($printer, $r, $link, $ID_Empresa);
+} catch (Throwable $e) {
+	debugtelegram("tiquet.php xec regal: ".$e->getMessage(), $_SERVER['HTTP_HOST']);
+}
 //linees borrades
 if($r['deletedlines']>0){
 	//$printer -> cut(66);

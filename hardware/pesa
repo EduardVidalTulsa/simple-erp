@@ -1,0 +1,70 @@
+#!/bin/zsh
+DIR=${0:A:h}
+source "$DIR/claus.sh" #conte $mysqluser mypass master (tpv que fa de master) idbascula
+#file /dev/ttyACM0
+if [ -s /dev/ttyACM0 ] 
+then
+	rm /dev/ttyACM0 -fv
+	sleep 20
+fi
+if [ ! -e /dev/ttyACM0 ]
+then
+	echo "no hi ha bascula"
+	sleep 20
+else #[ `file /dev/ttyACM0 | cut -b 15-19` = chara ] 
+
+	rm /tmp/ultimpes -fR
+	screen -S pesa -X quit >> /dev/null
+	screen -S pesa -dm zsh -c "grabserial -d /dev/ttyACM0 -e 1 -o /tmp/ultimpes -Q"
+	PREU=`mysql -u$mysqluser -p$mypass -h$master Preus -e "select LPAD(preu,5,0) as 	preu from ultimpes where ID=$idbascula\G" | grep preu| cut -d ':' -f2|xargs`
+	#echo PREU=$PREU
+	echo -en '\x02\x30\x31\0x1B'$PREU'\x03' >/dev/ttyACM0; sleep 0.15; echo -en '\x05'>/dev/ttyACM0
+	#echo -en '\x02\x30\x31\0x1B'$PREU'\x03'|hexdump 
+	sleep 0.15 
+
+	#sleep 0.5 
+	#cat /tmp/ultimpes
+	#echo "\n ultimpes\n "
+	#hexdump /tmp/ultimpes
+	if [ -s /tmp/ultimpes ]
+		then
+	#		pes=$(cat /tmp/ultimpes |cut -d `echo -e '\x0D'`  -f 1 |cut -d ' ' -f 2 |sed 's/^0*//' )
+			#pes=$(cat /tmp/ultimpes |cut -b 8-12|xargs )
+			#pes=$(rev /tmp/ultimpes |cut -d `echo -e '\x1b'` -f 3 |rev|sed 's/[^0-9]*//g' 
+			preub=$(rev /tmp/ultimpes |cut -d `echo -e '\x1b'` -f 2 |rev|sed 's/[^0-9]*//g')
+			pes=$(rev /tmp/ultimpes |cut -d `echo -e '\x1b'` -f 3 |rev |sed 's/[^0-9]*//g')
+			pes2=$(cat /tmp/ultimpes |cut -d `echo -e '3'` -f 2|cut -d `echo -e '\x1b'` -f 2|sed 's/[^0-9]*//g')
+			#echo PES=$pes
+			if [ `echo $pes|hexdump|tail -n 1` = 0000006 ] 
+			then	
+				#echo PES=$pes preub=$preub pes2=$pes2
+				#echo pes=$pes
+				#echo $pes|hexdump
+				#echo pes2=$pes2
+				#echo $pes2|hexdump
+	
+				if [ $PREU = $preub ]
+				then
+				#if [ $pes = $pes2 ]
+				#	then
+					q="UPDATE ultimpes set pes='$pes' WHERE ID='$idbascula'"
+					#echo $q
+				mysql -v -u$mysqluser -p$mypass -h$master Preus -e "$q"
+				#fi
+				#també he probat aquesta xapussa sense resultat screen -S insert -dm bash -c "mysql -u$mysqluser -p$mypass -h$master Preus -e $q"
+				fi
+			else
+				pes=0
+				q="UPDATE ultimpes set pes='$pes' WHERE ID='$idbascula'"
+				#echo $q
+       				mysql -u$mysqluser -p$mypass -h$master Preus -e "$q"
+       				#mysql -v -u$mysqluser -p$mypass -h$master Preus -e "$q"
+			fi
+	else		 
+		pes=0
+		q="UPDATE ultimpes set pes='$pes' WHERE ID='$idbascula'"
+		#echo $q
+	       	mysql -u$mysqluser -p$mypass -h$master Preus -e "$q"
+	       	#mysql -v -u$mysqluser -p$mypass -h$master Preus -e "$q"
+	fi
+fi

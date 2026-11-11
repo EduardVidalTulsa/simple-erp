@@ -1,0 +1,26 @@
+#!/bin/bash
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/claus.sh" #conte $mysqluser mypass master (tpv que fa de master) idbascula
+mysql -u$"mysqluser" -p"$mypass" -h"$master" Preus -e "Truncate ultimpes"
+
+
+q="INSERT INTO \`ultimpes\` (\`pes\`,\`preu\`,\`ID\`) VALUES (0,0,$idbascula);"
+q2="INSERT INTO \`ultimpes\` (\`pes\`,\`preu\`,\`ID\`) VALUES (0,0,2);"
+q3="INSERT INTO \`ultimpes\` (\`pes\`,\`preu\`,\`ID\`) VALUES (0,0,3);"
+q4="INSERT INTO \`ultimpes\` (\`pes\`,\`preu\`,\`ID\`) VALUES (0,0,4);"
+q15="INSERT INTO \`ultimpes\` (\`pes\`,\`preu\`,\`ID\`) VALUES (0,0,15);"
+echo $q4
+#mariadb -u$mysqluser -p$mypass -h$master Preus -e "$q"
+#mariadb -u$mysqluser -p$mypass -h$master Preus -e "$q2"
+#mariadb -u$mysqluser -p$mypass -h$master Preus -e "$q3"
+mariadb -u"$mysqluser" -p"$mypass" Preus -e "$q"
+mariadb -u"$mysqluser" -p"$mypass" Preus -e "$q2"
+mariadb -u"$mysqluser" -p"$mypass" Preus -e "$q3"
+mariadb -u"$mysqluser" -p"$mypass" Preus -e "$q4"
+mariadb -u"$mysqluser" -p"$mypass" Preus -e "$q15"
+#sleep 20
+#while [ true ]
+# do 
+#	 "$DIR/pesa"
+	 #pesa
+#done

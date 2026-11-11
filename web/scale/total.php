@@ -57,8 +57,9 @@ if(($_SESSION['Empresa']['cashkeeper']!="") && ($r['ID_Pagament']==1)) {
 		";
 		$link->query($create_table_sql) or die("No s'ha pogut crear la taula cashkeeper: ".$link->error);
 
-		// Calcula total en cèntims
-		$total = intval(number_format($r['Total'],2)*100);
+		// Calcula total en cèntims, descomptant el que ja s'hagi pagat amb vals regal
+		$pendent_vals = max(0, $r['Total'] - val_import_redimit_relacio($r['uuid'], $link, $ID_Empresa));
+		$total = intval(number_format($pendent_vals,2)*100);
 		if($_SESSION['Empresa']['cashkeeper_1cent']==0){
 			$ultim = $total % 10;
 			if (in_array($ultim, [1,6,9])) $total -= 1;

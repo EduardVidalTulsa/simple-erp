@@ -118,6 +118,9 @@ CREATE TABLE IF NOT EXISTS `Empresa` (
   `cashkeeper_1cent` varchar(35) DEFAULT '1' COMMENT '0 si no l''accepta',
   `ID_Empresa_a_mxgestio` int(10) unsigned NOT NULL DEFAULT 0,
   `url_public` varchar(255) DEFAULT NULL,
+  `seu_central` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'aquesta empresa marca quina és la seu central (on es pot crear makevoucher)',
+  `url_seu` varchar(255) NOT NULL DEFAULT '' COMMENT 'url pública del lloc/seu d''aquesta empresa, p.ex. https://botiga.example.com',
+  `host_ssh` varchar(255) NOT NULL DEFAULT '' COMMENT 'host SSH on fer ssh/scp per imprimir a la impressora d''aquesta seu (buit = local, impressora d''aquesta mateixa màquina)',
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -176,6 +179,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `id_bascula` varchar(255) NOT NULL DEFAULT '1',
   `bascula_vertical` tinyint(4) NOT NULL DEFAULT 1,
   `pot_veure_les_altres_empreses` tinyint(4) unsigned NOT NULL DEFAULT 0,
+  `pot_fer_vals` tinyint(4) unsigned NOT NULL DEFAULT 0 COMMENT 'pot crear xecs regal/descompte a /makevoucher',
   KEY `ID_Empresa` (`ID_Empresa`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`ID_Empresa`) REFERENCES `Empresa` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish2_ci;

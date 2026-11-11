@@ -2859,6 +2859,11 @@ function case_subtotal($ID_venedor, $link, $scale_uri, $w, $h, $prefixrelacio, $
     $total = "Total";
     if($r['discount'] > 0) $total .= " (Desc. -{$r['discount']}%)";
     $total .= ": " . number_format($r['Total'], $decimalstoshowmoney, $decimalsing, $thousandsing) . "€";
+    $ja_redimit_vals = val_import_redimit_relacio($uuid['uuid'], $link, $ID_Empresa);
+    if($ja_redimit_vals > 0) {
+        $total .= " · Xec regal: -" . number_format($ja_redimit_vals, $decimalstoshowmoney, $decimalsing, $thousandsing) . "€"
+            . " · Pendent: " . number_format(max(0, $r['Total'] - $ja_redimit_vals), $decimalstoshowmoney, $decimalsing, $thousandsing) . "€";
+    }
     echo $total;
     
     // Mostra línies
@@ -2916,7 +2921,13 @@ function case_subtotal($ID_venedor, $link, $scale_uri, $w, $h, $prefixrelacio, $
  */
 function case_tracto_subtotal($link, $scale_uri, $prefixrelacio) {
     global $ID_Empresa;
-    
+
+    // QR d'un xec regal llegit al subtotal: l'aplica com a descompte/pagament de la venda oberta
+    // (accepta el prefix actual XEC- i també l'antic VAL-, per als xecs ja emesos abans del canvi de nom)
+    if(val_es_possible_codi($_REQUEST['magic'] ?? '')) {
+        header("Location: {$scale_uri}val.php?codi=" . urlencode(trim($_REQUEST['magic'])) . "&uuid=" . urlencode($_REQUEST['uuid'] ?? ''));
+        die;
+    }
     // QR del TPV llegit al subtotal: si l'import quadra, cobra aquesta relació
     if(function_exists('tpv_qr_url') && tpv_qr_url($_REQUEST['magic'] ?? '') !== false) {
         header("Location: {$scale_uri}tiquettpv.php?qr=".urlencode($_REQUEST['magic'])."&uuid=".urlencode($_REQUEST['uuid'] ?? ''));

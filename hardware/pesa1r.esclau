@@ -1,0 +1,22 @@
+#!/bin/bash
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/claus.sh" #conte $mysqluser mypass master (tpv que fa de master) idbascula
+#mysql -u$mysqluser -p$mypass -h$master Preus -e "Truncate ultimpes"
+
+
+#q="INSERT INTO \`ultimpes\` (\`pes\`,\`preu\`,\`ID\`) VALUES (0,0,$idbascula);"
+#q2="INSERT INTO \`ultimpes\` (\`pes\`,\`preu\`,\`ID\`) VALUES (0,0,2);"
+#q3="INSERT INTO \`ultimpes\` (\`pes\`,\`preu\`,\`ID\`) VALUES (0,0,3);"
+#q4="INSERT INTO \`ultimpes\` (\`pes\`,\`preu\`,\`ID\`) VALUES (0,0,4);"
+#echo $q
+#mysql -u$mysqluser -p$mypass -h$master Preus -e "$q"
+#mysql -u$mysqluser -p$mypass -h$master Preus -e "$q2"
+#mysql -u$mysqluser -p$mypass -h$master Preus -e "$q3"
+#mysql -u$mysqluser -p$mypass -h$master Preus -e "$q4"
+sleep 20
+
+ while [ true ]
+ do 
+	 "$DIR/pesa.esclau"
+	 #pesa
+done
