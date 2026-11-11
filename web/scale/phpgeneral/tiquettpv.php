@@ -57,10 +57,18 @@ function tpv_taula($link, $ID_Empresa, $year = null) {
  * Si el text llegit és el QR d'un tiquet del TPV, retorna l'URL net; si no, false.
  * Un lector configurat amb teclat US sobre un sistema amb teclat espanyol escriu
  * "httpsÑ--apis.redsys.es-..." en lloc de "https://apis.redsys.es/...": ho desfem.
+ * Amb el Bloq Maj activat el lector escriu "HTTPS://APIS.REDSYS.ES/...?TKN=aBc" amb les
+ * majúscules invertides (el token en distingeix): si l'enllaç arriba en majúscules, s'inverteix tot.
+ * També es descarta el que s'hagi teclejat abans de "https" (p. ex. "0KIhttps://...").
  */
 function tpv_qr_url($s) {
 	$s = trim((string)$s);
 	if($s === '' || stripos($s, 'redsys') === false) return false;
+	if(($i = stripos($s, 'https')) > 0) $s = substr($s, $i);
+	if(strncmp($s, 'HTTPS', 5) === 0) {
+		$s = preg_replace_callback('/[a-zA-Z]/', fn($c) => ctype_upper($c[0]) ? strtolower($c[0]) : strtoupper($c[0]), $s);
+		$s = strtr($s, ['ñ' => 'Ñ']);  // el teclat espanyol amb Bloq Maj: "HTTPSñ" → "httpsÑ"
+	}
 	if(stripos($s, 'httpsÑ') === 0 || strpos($s, ':') === false) {
 		$s = strtr($s, ['Ñ' => ':', 'ñ' => ';', '-' => '/', '_' => '?', '¡' => '=', '/' => '&', '?' => '_', "'" => '-']);
 	}
@@ -265,15 +273,17 @@ function tpv_imprimeix_peu($printer, $r, $year, $ID_Empresa, $link) {
 		$printer->text("Pagat amb targeta " . trim("{$t['marca']} {$t['targeta']}") . "\n");
 		$printer->text("Ref.: {$t['referencia']}  " . number_format($t['import'], 2, $decimalsing, $thousandsing) . " EUR\n");
 		if($t['datetime']) $printer->text(date('d/m/Y H:i:s', strtotime($t['datetime'])) . "\n");
-		tpv_imprimeix_qr($printer, $t['url']);
-		$printer->text("Rebut del banc\n");
+		tpv_imprimeix_qr($printer, $t['url'], 180, "Rebut\ndel banc");
+		$printer->feed(2);                                    // que el tall no caigui sobre la imatge
 	}
 }
 
 // El QR es genera amb Endroid i s'imprimeix com a imatge raster: no depèn que la impressora
 // entengui el QR natiu (GS ( k). Es fa directament de la matriu de mòduls, sense PNG ni GD
 // (el carregador GD d'escpos-php no funciona amb PHP 8). Si falla, prova el QR natiu.
-function tpv_imprimeix_qr($printer, $url, $amplada = 360) {
+// $label (opcional, separat per \n) s'imprimeix al costat del QR amb la font de mapa de bits de
+// GD (imagestring/imagecolorat: no passa pel carregador trencat, només llegim els píxels).
+function tpv_imprimeix_qr($printer, $url, $amplada = 180, $label = null) {
 	try {
 		$qr = \Endroid\QrCode\QrCode::create($url)
 			->setErrorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow());
@@ -282,24 +292,67 @@ function tpv_imprimeix_qr($printer, $url, $amplada = 360) {
 		$marge = 4;                                               // zona blanca en mòduls
 		$p = max(2, min(8, intdiv($amplada, $n + 2 * $marge)));   // punts per mòdul
 		$costat = ($n + 2 * $marge) * $p;
-		$dades = '';
+		$files_qr = [];
 		for($y = -$marge; $y < $n + $marge; $y++) {
 			$linia = '';
 			for($x = -$marge; $x < $n + $marge; $x++)
 				$linia .= str_repeat(($y >= 0 && $x >= 0 && $y < $n && $x < $n && $m->getBlockValue($y, $x)) ? '1' : '0', $p);
-			$dades .= str_repeat($linia, $p);
+			for($i = 0; $i < $p; $i++) $files_qr[] = $linia;
 		}
-		$img = new class($costat, $dades) extends \Mike42\Escpos\EscposImage {
-			public function __construct($costat, $dades) {
+		$alcada = count($files_qr);
+
+		$amplada_etiqueta = 0;
+		$files_etiqueta = [];
+		if($label !== null) {
+			$font = 5;
+			$escala = 2.0;                                        // factor sobre la font de GD (ajustat a ull amb tiquets reals)
+			$fw = imagefontwidth($font);
+			$fh = imagefontheight($font);
+			$gap = 2;
+			$marge_esq = 12;
+			$linies = explode("\n", $label);
+			$amplada_base = $marge_esq + $fw * max(array_map('strlen', $linies));
+			$alcada_base = count($linies) * $fh + (count($linies) - 1) * $gap;
+			$im = imagecreate($amplada_base, $alcada_base);
+			$blanc = imagecolorallocate($im, 255, 255, 255);
+			$negre = imagecolorallocate($im, 0, 0, 0);
+			foreach($linies as $i => $l) imagestring($im, $font, $marge_esq, $i * ($fh + $gap), $l, $negre);
+			$amplada_etiqueta = (int)round($amplada_base * $escala);
+			$alcada_etiqueta = (int)round($alcada_base * $escala);
+			$im2 = imagecreate($amplada_etiqueta, $alcada_etiqueta);
+			imagecolorallocate($im2, 255, 255, 255);
+			$negre2 = imagecolorallocate($im2, 0, 0, 0);
+			imagecopyresized($im2, $im, 0, 0, 0, 0, $amplada_etiqueta, $alcada_etiqueta, $amplada_base, $alcada_base);
+			imagedestroy($im);
+			for($ty = 0; $ty < $alcada_etiqueta; $ty++) {
+				$linia = '';
+				for($tx = 0; $tx < $amplada_etiqueta; $tx++)
+					$linia .= imagecolorat($im2, $tx, $ty) == $negre2 ? '1' : '0';
+				$files_etiqueta[] = $linia;
+			}
+			imagedestroy($im2);
+			// centra verticalment l'etiqueta al costat del QR
+			$dalt = intdiv(max(0, $alcada - $alcada_etiqueta), 2);
+			$buida = str_repeat('0', $amplada_etiqueta);
+			$files_etiqueta = array_merge(array_fill(0, $dalt, $buida), $files_etiqueta,
+				array_fill(0, max(0, $alcada - $alcada_etiqueta - $dalt), $buida));
+		}
+
+		$costat_total = $costat + $amplada_etiqueta;
+		$dades = '';
+		for($y = 0; $y < $alcada; $y++) $dades .= $files_qr[$y] . ($files_etiqueta[$y] ?? '');
+		$img = new class($costat_total, $alcada, $dades) extends \Mike42\Escpos\EscposImage {
+			public function __construct($w, $h, $dades) {
 				parent::__construct(null, false);
-				$this->setImgWidth($costat);
-				$this->setImgHeight($costat);
+				$this->setImgWidth($w);
+				$this->setImgHeight($h);
 				$this->setImgData($dades);
 			}
 		};
 		$printer->bitImage($img);
 	} catch(Throwable $e) {
 		$printer->qrCode($url, \Mike42\Escpos\Printer::QR_ECLEVEL_L, 5);
+		if($label !== null) $printer->text(str_replace("\n", " ", $label) . "\n");
 	}
 }
 ?>
