@@ -2018,6 +2018,8 @@ function case_tracto($ID, $link, $scale_uri, $idbascula, $w, $h, $decimalsing, $
         header("Location: {$scale_uri}tiquettpv.php?qr=".urlencode($ID));
         die;
     }
+    // Codis dels connectors de l'usuari (p. ex. ++ i +- del connector de torns)
+    if(function_exists('scale_plugins_magic') && scale_plugins_magic($link, $ID, $scale_uri)) die;
     // Descompte -10 (comprovar ABANS de parsejar perquè el parser interpreta - com abono)
     if($ID === '--10') {
         $r = aplicar_descompte_ultima_linia($link, $scale_uri);
@@ -2924,7 +2926,7 @@ function case_tracto_subtotal($link, $scale_uri, $prefixrelacio) {
 
     // QR d'un xec regal llegit al subtotal: l'aplica com a descompte/pagament de la venda oberta
     // (accepta el prefix actual XEC- i també l'antic VAL-, per als xecs ja emesos abans del canvi de nom)
-    if(val_es_possible_codi($_REQUEST['magic'] ?? '')) {
+    if((!function_exists('plugin_actiu') || plugin_actiu($link, 'voucher')) && val_es_possible_codi($_REQUEST['magic'] ?? '')) {
         header("Location: {$scale_uri}val.php?codi=" . urlencode(trim($_REQUEST['magic'])) . "&uuid=" . urlencode($_REQUEST['uuid'] ?? ''));
         die;
     }

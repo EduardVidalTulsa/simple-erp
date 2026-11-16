@@ -180,6 +180,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `bascula_vertical` tinyint(4) NOT NULL DEFAULT 1,
   `pot_veure_les_altres_empreses` tinyint(4) unsigned NOT NULL DEFAULT 0,
   `pot_fer_vals` tinyint(4) unsigned NOT NULL DEFAULT 0 COMMENT 'pot crear xecs regal/descompte a /makevoucher',
+  `pot_gestionar_plugins` tinyint(4) unsigned NOT NULL DEFAULT 0 COMMENT 'pot activar i configurar connectors a /admin',
   KEY `ID_Empresa` (`ID_Empresa`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`ID_Empresa`) REFERENCES `Empresa` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish2_ci;
@@ -549,4 +550,18 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
+-- Connectors (web/plugins/, es gestionen a /admin). Es creen sols si no hi són (plugins/carrega.php).
+CREATE TABLE IF NOT EXISTS `plugin` (
+  `plugin` varchar(32) NOT NULL,
+  `actiu` tinyint(1) NOT NULL DEFAULT 1,
+  `config` text DEFAULT NULL,
+  PRIMARY KEY (`plugin`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS `plugin_usuari` (
+  `username` varchar(64) NOT NULL,
+  `plugin` varchar(32) NOT NULL,
+  `config` text DEFAULT NULL,
+  PRIMARY KEY (`username`,`plugin`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- El connector de torns crea Empresa_<ID>_torn per a cada empresa que el fa servir (plugins/torn/torn.php).
 SET FOREIGN_KEY_CHECKS=1;

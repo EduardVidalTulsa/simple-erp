@@ -61,8 +61,8 @@ VALUES (0, 'TRIA EMPRESA', '', '', '', '', '', '', '', '', '', '', 0, 0, 1),
        (1, 'Example Shop', 'Example Shop S.L.', 'Example Street 1', '00000 Example Town', '000 000 000', 'shop@example.org', 'B00000000',
         'EXAMPLE SHOP', 'Example Shop S.L.', 'Example Street 1', 'Thank you!', 0, 0, 1);
 
-INSERT IGNORE INTO users (username, password, ID_Empresa, url_key, id_bascula, bascula_vertical, pot_veure_les_altres_empreses)
-VALUES ('admin', '$2y$12$cMGIwrGf8m4aNpXmVZcKBOt1hgQeGQmtnOdEKS.Oyce3E3eyrDY8O', 1, '', 1, 0, 1);
+INSERT IGNORE INTO users (username, password, ID_Empresa, url_key, id_bascula, bascula_vertical, pot_veure_les_altres_empreses, pot_gestionar_plugins)
+VALUES ('admin', '$2y$12$cMGIwrGf8m4aNpXmVZcKBOt1hgQeGQmtnOdEKS.Oyce3E3eyrDY8O', 1, '', 1, 0, 1, 1);
 
 INSERT IGNORE INTO `1_Venedor` (ID, Value) VALUES (1, 'Anna'), (2, 'Pau');
 INSERT IGNORE INTO families (ID, value) VALUES (1, 'Nuts');

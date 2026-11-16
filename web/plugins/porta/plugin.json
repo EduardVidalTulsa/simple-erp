@@ -1,0 +1,10 @@
+{
+  "titol": "Porta (Shelly)",
+  "descripcio": "Interruptor flotant a scale per bloquejar o desbloquejar una porta amb un relé Shelly Gen2 o posterior (encès = desbloquejada). Pensat per a la bàscula del costat de la porta: la dependenta la pot bloquejar quan surt un moment.",
+  "abast": "usuari",
+  "per_defecte": true,
+  "config": {
+    "host": {"tipus": "text", "per_defecte": "", "ajuda": "IP o nom del Shelly a la xarxa local (p. ex. 192.0.2.6)"},
+    "nom":  {"tipus": "text", "per_defecte": "Porta", "ajuda": "Text que surt al costat de l'interruptor"}
+  }
+}

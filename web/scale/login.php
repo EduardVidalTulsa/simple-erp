@@ -31,6 +31,7 @@ require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/taula.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/lib.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/tiquettpv.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/valsregal.php");
+require_once("{$_SERVER['DOCUMENT_ROOT']}/plugins/carrega.php"); // connectors: veure /admin
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/mysqli.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/vars.php");
 session_start();

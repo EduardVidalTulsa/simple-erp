@@ -18,6 +18,7 @@ family business with several shops; this is a cleaned-up copy of its code.
 | `web/relacions/` | Sales documents: delivery notes, invoices, quotes, orders, inventories, transfers; PDF with LaTeX, links by e-mail, SMS or WhatsApp |
 | `web/makevoucher/` | Gift/discount vouchers: create a voucher with a one-time QR code, print it on the receipt printer, redeem it at the scale's subtotal screen (capped to what's left to pay; the rest is paid as usual). Only on the central site when there are several (see below) |
 | `web/altaclient/` | Public new-client sign-up form (with a captcha); users with permission can also see and edit the client list |
+| `web/plugins/`, `web/admin/` | Plugins (door switch, queue tickets, vouchers) that are turned on and configured at `/admin` (see below) |
 | `web/pdf/` | Public access to the generated PDFs |
 | `web/index.html` | Start page |
 | `hardware/` | Shell scripts that read a physical serial-port scale and feed its weight into the `ultimpes` table that `web/scale/` polls; adapt the serial protocol to your own scale model |
@@ -47,7 +48,22 @@ there from any other shop, so vouchers are always created in one place. `Empresa
 by default) makes printing happen over SSH on that shop's own machine instead of the one running
 `makevoucher`, for that same one-server-per-shop setup — it assumes the same install path on both
 ends and a passwordless SSH key for the web server user, which is worth thinking about before
-turning it on.
+turning it on. Vouchers are redeemed against the shop's own `Empresa_N_voucher` table, so in that
+setup you need to copy that table from the central site to each shop (and send redeemed vouchers
+back); this repository does not include that sync.
+
+**Plugins.** Optional features live in `web/plugins/<name>/`, each described by a `plugin.json`
+(title, description, scope, default state and settings). Users with `users.pot_gestionar_plugins=1`
+(the demo `admin`) turn them on and off and configure them at **`/admin`**. A plugin's scope is
+either the whole server (`lloc`) or one scale user (`usuari`): user plugins can draw a small widget
+at the bottom right of the scale screen and handle codes typed in the scale's code field. Settings
+are stored in the `plugin` and `plugin_usuari` tables (created automatically). Included plugins:
+
+| Plugin | What it does |
+|---|---|
+| `porta` (per user) | Floating switch on the scale to lock/unlock a door through a Shelly Gen2+ relay on the local network (relay on = unlocked). Setting: the Shelly's address, e.g. `192.0.2.6` |
+| `torn` (per user) | Queue tickets for a busy counter. An old phone or tablet in kiosk mode opens `/plugins/torn/client.php?token=…` (the link is shown at `/admin`): customers tap *Agafa torn* and the scale's receipt printer prints "Torn K – M people ahead"; the page shows how many people are waiting and keeps the screen on (Wake Lock, needs HTTPS). On the scale, staff see the current number and move it with + and −, or by typing `++` (next) and `+-` (back) in the code field. Numbers restart every day and go from 1 to 99; the counter is stored in `Empresa_<ID>_torn` |
+| `voucher` (whole server, on by default) | The gift/discount vouchers above. Turning it off disables `/makevoucher` and voucher redemption at the scale. Settings: default expiry in days and the thank-you text printed on the voucher |
 
 ## Quick start with Docker
 
@@ -121,6 +137,16 @@ pressupostos… amb PDF), `makevoucher` (xecs regal/descompte amb QR d'un sol ú
 (alta pública de clients, amb captcha). Les feines de fons les fa `scale/p.php`, que una sola
 màquina ha de cridar cada pocs segons. A `hardware/` hi ha els scripts que llegeixen una bàscula
 física per port sèrie i n'alimenten el pes a la taula `ultimpes`.
+
+**Connectors:** les funcions opcionals són a `web/plugins/<nom>/` (cadascuna amb el seu
+`plugin.json`) i s'activen i es configuren a **`/admin`** (cal `users.pot_gestionar_plugins=1`).
+N'hi ha de tot el servidor i d'usuari de bàscula. Inclosos: `porta` (interruptor flotant a la
+bàscula per bloquejar una porta amb un Shelly Gen2+), `torn` (torns per a una parada amb cua: un
+mòbil vell en mode quiosc fa de botó per als clients i imprimeix «Torn K, teniu davant M
+persones»; a la bàscula es passa de torn amb + i − o teclejant `++` i `+-`; cada dia torna a
+començar, de 1 a 99) i `voucher` (els xecs regal; desactivat, no se'n poden crear ni cobrar).
+Amb un servidor per seu, els xecs es creen a la central i cal portar la taula `Empresa_N_voucher`
+a cada seu (i retornar-ne els cobrats) amb la vostra pròpia sincronització.
 
 **QR del TPV (tiquet digital de Redsys):** si es llegeix amb el lector de la bàscula el QR que
 mostra el TPV del banc, la bàscula baixa el PDF, en treu l'import, la referència i la targeta, el

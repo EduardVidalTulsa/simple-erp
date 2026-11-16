@@ -8,6 +8,8 @@
  */
 require("login.php");
 if($login == false) { $link->close(); header("Location: {$scale_uri}"); die; }
+// connector de xecs desactivat a /admin: no se'n cobra cap
+if(function_exists('plugin_actiu') && !plugin_actiu($link, 'voucher')) { $link->close(); header("Location: {$scale_uri}"); die; }
 
 function val_pantalla($titol, $text, $color = '#ACAB00', $botons = [], $segons = 8) {
 	global $scale_uri;

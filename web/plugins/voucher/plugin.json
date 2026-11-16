@@ -1,0 +1,10 @@
+{
+  "titol": "Xecs regal",
+  "descripcio": "Xecs regal o de descompte (en anglès, vouchers): es creen a /makevoucher amb un QR d'un sol ús, s'imprimeixen a la impressora de tiquets i es cobren llegint el QR a la pantalla de subtotal de scale. Si el desactives, /makevoucher no deixa crear-ne i scale no n'accepta cap. Amb un servidor per seu, els xecs es creen a la seu central (Empresa.seu_central) i cal sincronitzar la taula Empresa_N_voucher cap a cada seu.",
+  "abast": "lloc",
+  "per_defecte": true,
+  "config": {
+    "caducitat_dies": {"tipus": "number", "per_defecte": "", "ajuda": "Dies de caducitat que es proposen en crear un xec (buit: sense caducitat)"},
+    "agraiment": {"tipus": "text", "per_defecte": "Moltes gràcies per la teva confiança!\nT'esperem ben aviat a la botiga\nper gaudir del teu xec regal.", "ajuda": "Text del peu del tiquet del xec (\\n per canviar de línia)"}
+  }
+}

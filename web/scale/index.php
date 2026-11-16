@@ -55,6 +55,8 @@ if($login){
 		case_tracto_subtotal($link, $scale_uri, $prefixrelacio);
 		break;
 	}
+	// ginys dels connectors de l'usuari (porta, torns...): es configuren a /admin
+	if(function_exists('scale_plugins_mostra')) scale_plugins_mostra($link);
 }
 //fi swich estat
 	else {// echo "login false 2";

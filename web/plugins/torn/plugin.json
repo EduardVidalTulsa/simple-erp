@@ -1,0 +1,14 @@
+{
+  "titol": "Torns",
+  "descripcio": "Sistema de torns per a una parada amb cua. Un mòbil o tauleta en mode quiosc (client.php?token=…) fa de botó per als clients: imprimeix un tiquet «Torn K, teniu davant M persones» a la impressora de tiquets d'aquest servidor. A scale, la dependenta veu per quin número anem i el canvia amb + i − o teclejant ++ (següent) i +- (enrere). La numeració torna a començar cada dia i va de 1 a 99. Activa'l només a l'usuari de la bàscula que porta la cua.",
+  "abast": "usuari",
+  "per_defecte": true,
+  "config": {
+    "token": {
+      "tipus": "token",
+      "per_defecte": "",
+      "ajuda": "Clau de la pàgina dels clients: https://<servidor>/plugins/torn/client.php?token=…"
+    }
+  },
+  "enllac_usuari": "/plugins/torn/client.php?token={token}"
+}

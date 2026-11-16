@@ -30,6 +30,12 @@ if($central && $central['url_seu'] != '') {
 	}
 }
 
+// connector de xecs (es configura a /admin)
+if(!plugin_actiu($link, 'voucher')) {
+	echo "Els xecs regal estan desactivats. Es poden activar a /admin (connector «Xecs regal»).";
+	$link->close(); die;
+}
+$voucher_cfg = plugin_config($link, 'voucher');
 if(mysql1r("SELECT pot_fer_vals FROM `users` WHERE `username`='{$_SESSION['user']}'", $link) != '1') {
 	echo "No tens permís per crear xecs regal. Demana que t'activin `pot_fer_vals` a `users`.";
 	$link->close(); die;
@@ -73,8 +79,8 @@ function val_imprimeix_ticket($val, $empresa) {
 	$printer->feed(1);
 	$printer->text($val['codi'] . "\n");
 	$printer->feed(1);
-	$printer->text("Moltes gràcies per la teva confiança!\n");
-	$printer->text("T'esperem ben aviat a la botiga\nper gaudir del teu xec regal.\n");
+	global $voucher_cfg;
+	foreach(explode("\n", str_replace('\\n', "\n", $voucher_cfg['agraiment'] ?? '')) as $l) $printer->text($l . "\n");
 	$printer->tallacapcalera($empresa);
 	$printer->close();
 	$ruta = __DIR__ . "/../scale/$fitxer";
@@ -187,7 +193,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
 	<input type="text" name="import" required autofocus style="font-size:22px;width:150px;" placeholder="20"></label>
 	<br><br>
 	<label>Caduca (opcional):<br>
-	<input type="date" name="caducitat" style="font-size:22px;"></label>
+	<input type="date" name="caducitat" style="font-size:22px;"<?php
+		$dies = $voucher_cfg['caducitat_dies'] ?? '';
+		if(is_numeric($dies) && $dies > 0) echo ' value="' . date('Y-m-d', strtotime("+" . (int)$dies . " days")) . '"';
+	?>></label>
 	<br><br>
 	<button type="submit" style="font-size:22px;padding:10px 30px;">Crea</button>
 </form>
