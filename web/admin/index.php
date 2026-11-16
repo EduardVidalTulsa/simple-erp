@@ -42,7 +42,8 @@ function admin_valors($meta) {
 }
 
 $missatge = '';
-if($_SERVER['REQUEST_METHOD'] === 'POST') {
+// el formulari d'entrada (user/contra) també és un POST: només són accions les que porten «accio»
+if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accio'])) {
 	$nom = $_POST['plugin'] ?? '';
 	if(!hash_equals($csrf, (string)($_POST['csrf'] ?? '')) || !isset($plugins[$nom])) {
 		http_response_code(400); echo "Petició no vàlida"; die;
@@ -71,7 +72,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$st->bind_param('s', $u);
 		$st->execute();
 		if($u !== '' && $st->get_result()->fetch_row()[0] > 0) {
-			$valors = $accio === 'usuari_afegeix' ? plugin_config_defecte($nom) : admin_valors($meta);
+			$valors = admin_valors($meta);
 			// un token buit es genera sol, així el connector ja funciona en activar-lo
 			foreach($meta['config'] as $camp => $d)
 				if(($d['tipus'] ?? '') === 'token' && ($valors[$camp] ?? '') === '') $valors[$camp] = bin2hex(random_bytes(16));
@@ -105,7 +106,7 @@ function admin_camps($meta, $valors, $h) {
 	foreach($meta['config'] as $camp => $d) {
 		$v = $valors[$camp] ?? '';
 		$n = 'camp[' . $h($camp) . ']';
-		$o .= '<label class="camp"><span>' . $h($camp) . '</span>';
+		$o .= '<label class="camp"><span>' . $h($d['etiqueta'] ?? $camp) . '</span>';
 		switch($d['tipus'] ?? 'text') {
 			case 'bool':
 				$o .= '<input type="checkbox" name="' . $n . '" value="1"' . ($v ? ' checked' : '') . '>'; break;
@@ -152,7 +153,8 @@ input[type=text],textarea{width:100%}
 .missatge{background:var(--verd);color:#fff;padding:.6rem 1rem;border-radius:8px}
 form.en-linia{display:inline}
 </style></head><body><main>
-<h1>Connectors</h1>
+<h1>Connectors de <?= $h($_SERVER['HTTP_HOST']) ?></h1>
+<p class="desc">Cada servidor té els seus: el que actives aquí només val per a les bàscules que fan servir aquest servidor.</p>
 <?php if(!empty($_GET['m'])): ?><p class="missatge"><?= $h($_GET['m']) ?></p><?php endif; ?>
 <?php foreach($plugins as $nom => $meta): $actiu = plugin_actiu($link, $nom); ?>
 <section class="targeta" id="<?= $h($nom) ?>">
@@ -199,11 +201,14 @@ form.en-linia{display:inline}
    </form>
   </div>
   <?php endforeach; ?>
-  <form method="post" class="usuari fila">
+  <form method="post" class="usuari">
    <input type="hidden" name="csrf" value="<?= $csrf ?>"><input type="hidden" name="plugin" value="<?= $h($nom) ?>">
    <input type="hidden" name="accio" value="usuari_afegeix">
-   <select name="username"><?php foreach($usuaris as $u): ?><option><?= $h($u) ?></option><?php endforeach; ?></select>
-   <button class="verd">Activa-ho per a aquest usuari</button>
+   <b>Activa'l per a un usuari de scale</b>
+   <label class="camp"><span>Usuari</span>
+    <select name="username"><?php foreach($usuaris as $u): ?><option><?= $h($u) ?></option><?php endforeach; ?></select></label>
+   <?= admin_camps($meta, plugin_config_defecte($nom), $h) ?>
+   <button class="verd">Activa</button>
   </form>
  <?php endif; ?>
 </section>

@@ -7,7 +7,8 @@
     "token": {
       "tipus": "token",
       "per_defecte": "",
-      "ajuda": "Clau de la pàgina dels clients: https://<servidor>/plugins/torn/client.php?token=…"
+      "ajuda": "Clau de la pàgina dels clients: https://<servidor>/plugins/torn/client.php?token=…",
+      "etiqueta": "Clau de la pàgina dels clients"
     }
   },
   "enllac_usuari": "/plugins/torn/client.php?token={token}"

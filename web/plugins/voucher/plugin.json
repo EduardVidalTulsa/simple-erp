@@ -4,7 +4,17 @@
   "abast": "lloc",
   "per_defecte": true,
   "config": {
-    "caducitat_dies": {"tipus": "number", "per_defecte": "", "ajuda": "Dies de caducitat que es proposen en crear un xec (buit: sense caducitat)"},
-    "agraiment": {"tipus": "text", "per_defecte": "Moltes gràcies per la teva confiança!\nT'esperem ben aviat a la botiga\nper gaudir del teu xec regal.", "ajuda": "Text del peu del tiquet del xec (\\n per canviar de línia)"}
+    "caducitat_dies": {
+      "tipus": "number",
+      "per_defecte": "",
+      "ajuda": "Dies de caducitat que es proposen en crear un xec (buit: sense caducitat)",
+      "etiqueta": "Caducitat per defecte (dies)"
+    },
+    "agraiment": {
+      "tipus": "text",
+      "per_defecte": "Moltes gràcies per la teva confiança!\nT'esperem ben aviat a la botiga\nper gaudir del teu xec regal.",
+      "ajuda": "Text del peu del tiquet del xec (\\n per canviar de línia)",
+      "etiqueta": "Text d'agraïment del tiquet"
+    }
   }
 }
