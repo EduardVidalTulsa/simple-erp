@@ -377,6 +377,8 @@ function a($link,$text=""){
 	echo ar($link,$text);
 }
 function ar($link,$text="",$target='_self'){
+	if(preg_match('/^[\s\x00-\x1f]*(javascript|data|vbscript):/i',(string)$link))$link='#'; // evita XSS via href
+	$link=htmlspecialchars((string)$link,ENT_QUOTES); // l'href va dins d'un atribut
 	if($text=="")return "<a href=\"$link\" target=\"$target\">$link</a>";
         else return "<a href=\"$link\" target=\"$target\">$text </a>";
 }
@@ -531,7 +533,7 @@ function tdiv(){
 	echo "</div>";
 }
 function pre($array=false){
-	if($array!=FALSE){echo '<pre>';print_r($array);echo '</pre>';}
+	if($array!=FALSE){echo '<pre>'.htmlspecialchars(print_r($array,true),ENT_QUOTES).'</pre>';} /* escapat: pre() mostra dades, mai HTML */
 	 else echo '<pre>';
 }
 function prer($array=false){

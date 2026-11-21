@@ -27,7 +27,9 @@ function debugtelegram($debug,$valor='debug',$telegramchannel=FALSE,$return=FALS
 }
 function whatsapp($missatge, $telefon_o_grup = '') {
     // ordre configurada a keys.php ($whatsapp_cmd), p. ex. 'npx mudslide send {to} {msg}'
-    global $whatsapp_cmd;
+    global $whatsapp_cmd, $whatsapp_grup;
+    // sense destinatari: el grup per defecte de keys.php ($whatsapp_grup)
+    if ($telefon_o_grup == '') $telefon_o_grup = $whatsapp_grup ?? '';
     if (empty($whatsapp_cmd) || $telefon_o_grup == '') return ['output' => [], 'return_code' => -1];
     $comanda = strtr($whatsapp_cmd, ['{to}' => escapeshellarg($telefon_o_grup), '{msg}' => escapeshellarg($missatge)]);
 
@@ -40,11 +42,31 @@ function whatsapp($missatge, $telefon_o_grup = '') {
         'return_code' => $ret
     ];
 }
+// Ordre local: directa o per "ssh $localuser localhost". La sol definir keys.php; aquesta és la de
+// recanvi perquè un keys.php antic sense localcmd() no faci petar res.
+if (!function_exists('localcmd')) {
+	function localcmd($cmd) {
+		global $localuser;
+		return ($localuser ?? '') === '' ? $cmd : "ssh {$localuser}localhost " . escapeshellarg($cmd);
+	}
+}
+// Adhesiu especial d'un producte (SVG fet a mà, amb mida o sense): primer a $stickers_dir de keys.php
+// (per defecte ../stickers, fora del web), després a scale/img com abans. Torna el camí o false.
+function sticker_svg($ID_product, $midaetiqueta = '') {
+	global $stickers_dir;
+	$dirs = [rtrim($stickers_dir ?? ($_SERVER['DOCUMENT_ROOT'] . '/../stickers'), '/'), $_SERVER['DOCUMENT_ROOT'] . '/scale/img'];
+	$ID_product = preg_replace('/[^0-9A-Za-z_.-]/', '', (string)$ID_product);
+	foreach ($dirs as $d)
+		foreach (array_unique([$midaetiqueta, '']) as $m)
+			if (is_file("$d/{$ID_product}{$m}.svg")) return "$d/{$ID_product}{$m}.svg";
+	return false;
+}
 function sms_mikrotik($missatge, $telefon){
 	// enviar un SMS amb l'ordre configurada a keys.php ($sms_cmd), p. ex. per un router MikroTik amb LTE
 	global $sms_cmd;
 	if (empty($sms_cmd)) return;
-	exec(strtr($sms_cmd, ['{to}' => escapeshellarg($telefon), '{msg}' => escapeshellarg($missatge)]));
+	// el telèfon va sense cometes (RouterOS no les entén): només xifres i +, així no hi cap res més
+	exec(strtr($sms_cmd, ['{to}' => preg_replace('/[^0-9+]/', '', (string)$telefon), '{msg}' => escapeshellarg($missatge)]));
 }
 function myErrorHandler($errno, $errstr, $errfile, $errline){
    /* if (!(error_reporting() & $errno)) {

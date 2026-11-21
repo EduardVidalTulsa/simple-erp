@@ -57,7 +57,15 @@ $recepta['3']=[
 "nostres productes a casa, no dubteu en ",
 "escriure'ns a via whatsapp o telegram ",
 ];
-$tail=[$_SESSION['Empresa']['termal_head_1'] ?? '', $_SESSION['Empresa']['termal_head_2'] ?? ''];
+// peu: Empresa.peu_recepta (una línia per fila); si no n'hi ha, les capçaleres del tiquet.
+// Les sessions obertes abans que existís la columna no la tenen: es llegeix de la base de dades.
+$peu_recepta = $_SESSION['Empresa']['peu_recepta'] ?? null;
+if ($peu_recepta === null) {
+	try { $peu_recepta = mysql1r("SELECT `peu_recepta` FROM `Empresa` WHERE `ID`='".(int)($_SESSION['Empresa']['ID'] ?? 0)."'", $link); }
+	catch (Throwable $e) { $peu_recepta = ''; }
+}
+$tail = trim((string)$peu_recepta) != '' ? preg_split('/\r?\n/', trim($peu_recepta))
+	: [$_SESSION['Empresa']['termal_head_1'] ?? '', $_SESSION['Empresa']['termal_head_2'] ?? ''];
 date_default_timezone_set('Europe/Andorra');
 
 //debugtelegram($_SESSION);

@@ -35,8 +35,8 @@ if(!mysql1r("SHOW COLUMNS FROM `{$taula_index}` LIKE 'print'",$link,1)){
 		echo "";//ignore error, means print field already exist
 	}
 }
-$recopia=mysql1r("select print from $taula_index where `uuid`='{$_REQUEST['uuid']}'; ",$link);
-mysqli_query($link,"UPDATE $taula_index SET `print` = '1' WHERE  `uuid`='{$_REQUEST['uuid']}'");
+$recopia=mysql1r("select print from $taula_index where `uuid`='".$link->real_escape_string((string)$_REQUEST['uuid'])."'; ",$link);
+mysqli_query($link,"UPDATE $taula_index SET `print` = '1' WHERE  `uuid`='".$link->real_escape_string((string)$_REQUEST['uuid'])."'");
 //debugtelegram($_SESSION['Empresa']);
 if ($_SESSION['Empresa']['bool_ticket_printer']=='1'){
 try {

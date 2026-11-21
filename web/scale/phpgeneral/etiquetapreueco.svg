@@ -89,7 +89,7 @@
      inkscape:label="Capa 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-265)"><text
+     transform="translate(0,-265)"><svg id="logo" x="0.94733971" y="274.23734" width="10.102783" height="10.102783" viewBox="$logoviewbox" preserveAspectRatio="xMidYMid meet">$logo</svg><text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.9333px;line-height:1.25;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';text-align:end;letter-spacing:-0.455083px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="49.258759"

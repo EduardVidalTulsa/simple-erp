@@ -102,6 +102,7 @@ CREATE TABLE IF NOT EXISTS `Empresa` (
   `sell_wholesale` varchar(12) NOT NULL DEFAULT '0',
   `termal_head_1` varchar(25) DEFAULT NULL,
   `termal_head_2` varchar(35) DEFAULT NULL,
+  `peu_recepta` text DEFAULT NULL COMMENT 'Recipe receipt footer, one line per row (empty = receipt header lines)',
   `termal_head_3` varchar(32) DEFAULT NULL,
   `termal_tail_1` varchar(35) DEFAULT NULL,
   `tiquet_cut_before_head1_bool` tinyint(4) NOT NULL DEFAULT 0 COMMENT '1: imprimeix termal_head_1 del proper tiquet abans de tallar (GS V 0); 0: capçalera al principi i cut()',

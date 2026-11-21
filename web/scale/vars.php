@@ -1,6 +1,11 @@
 <?php
-$webname=$_SERVER['HTTP_HOST'] ?? 'localhost';
+// de keys.php si hi són (es fa servir també des de dins de funcions: per això $GLOBALS)
+$webname=$GLOBALS['web_nom'] ?? ($_SERVER['HTTP_HOST'] ?? 'localhost');
 $ownername=$GLOBALS['empresa_nom'] ?? '';
+$mytwitter=$GLOBALS['mytwitter'] ?? '';
+$myfacebook=$GLOBALS['myfacebook'] ?? '';
+$mytelegram=$GLOBALS['mytelegram'] ?? '';
+$myinstagram=$GLOBALS['myinstagram'] ?? '';
 $avaiable_languages=array('eo' ,'en','es','ca');
 $any=date('Y');
 $decimalsing=",";

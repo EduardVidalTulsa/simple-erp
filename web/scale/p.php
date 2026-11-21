@@ -55,7 +55,7 @@ if($_REQUEST['saluda']){echo"bon dia!\n";
 }
 if(!isset($_REQUEST['ID']))$_REQUEST['ID']=100;
 $link=new mysqli($myserver,$myuser,$mypassword,$mydatabase);
-$empresa=$link->query("SELECT * FROM Empresa where `ID`='{$_REQUEST['ID']}'")->fetch_assoc();
+$empresa=$link->query("SELECT * FROM Empresa where `ID`='".(int)$_REQUEST['ID']."'")->fetch_assoc();
 //debugtelegram($empresa);
 #$args=explode("/",$_SERVER['REQUEST_URI']);//$lang=new lang();
 $lang='ca';
@@ -330,7 +330,8 @@ while($print=$qprint->fetch_assoc()){
 		}
 	    else{
 			//debugtelegram("imprimeixo {$_SERVER['DOCUMENT_ROOT']}/scale/img/{$print['ID_product']}.svg",gethostname());
-			$scp="scp {$_SERVER['DOCUMENT_ROOT']}/scale/img/{$print['ID_product']}{$midaetiqueta}.svg {$empresa['printerserver']}:/tmp";
+			// adhesiu especial (stickers_dir o scale/img); a la impressora es diu sempre /tmp/<ID><mida>.svg
+			$scp="scp ".escapeshellarg((string)sticker_svg($print['ID_product'],$midaetiqueta))." {$empresa['printerserver']}:/tmp/{$print['ID_product']}{$midaetiqueta}.svg";
 			exec ($scp) ;
 			//debugtelegram($scp);
 			$ps="/tmp/{$print['ID_product']}_especial.ps";

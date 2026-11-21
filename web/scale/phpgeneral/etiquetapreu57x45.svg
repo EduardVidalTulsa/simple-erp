@@ -143,7 +143,7 @@
        style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="31.683851"
        y="294.71796"
-       id="text46" /><text
+       id="text46" /><svg id="logo" x="1.2798622" y="265.89386" width="10.102783" height="10.102783" viewBox="$logoviewbox" preserveAspectRatio="xMidYMid meet">$logo</svg><text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.9333px;line-height:1.25;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';text-align:end;letter-spacing:-0.455083px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="49.448921"

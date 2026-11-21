@@ -101,11 +101,9 @@ if($debug){
 }
 
 // Comprovar si és etiqueta especial (SVG directe a img/)
-$svg_especial = "{$_SERVER['DOCUMENT_ROOT']}/scale/img/{$ID_product}{$midaetiqueta}.svg";
-if(!file_exists($svg_especial)) {
-	$svg_especial = "{$_SERVER['DOCUMENT_ROOT']}/scale/img/{$ID_product}.svg";
-}
-$es_especial = file_exists($svg_especial);
+// (a $stickers_dir de keys.php o, com abans, a scale/img: veure sticker_svg() a lib.php)
+$svg_especial = sticker_svg($ID_product, $midaetiqueta);
+$es_especial = $svg_especial !== false;
 
 if($debug){
 	debugtelegram("es_especial=$es_especial, svg_especial=$svg_especial", "etiquetaproducte.php check especial");
@@ -219,10 +217,7 @@ if($es_producte_normal){
 	if($debug) debugtelegram("Processant etiqueta especial $ID_product");
 	
 	// Llegir el SVG i substituir $any si cal
-	$svg_source = "{$_SERVER['DOCUMENT_ROOT']}/scale/img/{$ID_product}{$midaetiqueta}.svg";
-	if(!file_exists($svg_source)) {
-		$svg_source = "{$_SERVER['DOCUMENT_ROOT']}/scale/img/{$ID_product}.svg";
-	}
+	$svg_source = $svg_especial;
 	
 	$svg_content = file_get_contents($svg_source);
 	

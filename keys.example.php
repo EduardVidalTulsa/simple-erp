@@ -27,6 +27,7 @@ $telegramdebugchannel = '';
 $telegram_canal_preus = '';               // chat id notified when a price changes
 
 // --- WhatsApp and SMS (shell commands, '' = off). {to} and {msg} are replaced, already quoted ---
+$whatsapp_grup = '';                      // default recipient of whatsapp() when none is given
 $whatsapp_cmd = '';                       // e.g. 'npx mudslide send {to} {msg}'
 $sms_cmd = '';                            // e.g. 'ssh admin@router "/tool sms send lte1 phone-number={to} message={msg}"'
 
@@ -46,6 +47,12 @@ $receipt_printer_ip = '';                 // network receipt printer (RAW 9100);
 $receipt_printer_host = 'localhost';      // machine with the USB receipt printer (reached by ssh)
 $tag_destination = '';                    // scp destination for label files ('' = print locally)
 $midaetiqueta = '';                       // label size suffix: '' (default) or '57x45'
+// Your own look and files (optional; the code works without them)
+$web_nom = '';                            // site name in the footer links ('' = the host name)
+$mytwitter = $myfacebook = $mytelegram = $myinstagram = '';   // footer social links
+$logo_svg = '';                           // logo on price labels; '' = ../logo.svg, or the example web/scale/phpgeneral/logo.svg
+$stickers_dir = '';                       // hand-made SVG labels per product (<ID>.svg, <ID>57x45.svg); '' = ../stickers, then web/scale/img
+
 $localuser = '';                          // '' runs pdflatex/inkscape directly; 'user@' runs them through ssh user@localhost
 $smbshare = '';                           // optional SMB share for exports
 $smbuser = '';

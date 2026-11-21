@@ -15,6 +15,25 @@ function tallarCadena($cadena, $max) {
     return $cadena;
 }
 
+// Logo de les etiquetes: $logo_svg de keys.php (per defecte ../logo.svg, fora del web) o, si no n'hi ha,
+// el logo.svg d'exemple d'aquí. Torna [contingut, viewBox] per posar dins el <svg> que marca la plantilla
+// amb $logo i $logoviewbox (posició i mida les decideix la plantilla).
+function logo_etiqueta(){
+	global $logo_svg;
+	static $r = null;
+	if ($r !== null) return $r;
+	foreach ([$logo_svg ?? '', $_SERVER['DOCUMENT_ROOT'].'/../logo.svg', __DIR__.'/logo.svg'] as $f) {
+		if ($f == '' || !is_file($f)) continue;
+		$s = file_get_contents($f);
+		if (!preg_match('/<svg\b([^>]*)>(.*)<\/svg>/s', $s, $m)) continue;
+		if (preg_match('/viewBox="([^"]+)"/', $m[1], $v)) $vb = $v[1];
+		elseif (preg_match('/width="([\d.]+)[a-z]*".*height="([\d.]+)[a-z]*"/s', $m[1], $v)) $vb = "0 0 {$v[1]} {$v[2]}";
+		else $vb = '0 0 100 100';
+		return $r = [$m[2], $vb];
+	}
+	return $r = ['', '0 0 1 1'];
+}
+
 // SVG de l'etiqueta de preu com a string (l'imprimeix etiquetapreu() i el previsualitza tlinea.php)
 function generar_etiqueta_preu_svg($ID,$pvp,$nom,$u,$origen,$package=""){
 	global $midaetiqueta, $link;
@@ -30,7 +49,8 @@ function generar_etiqueta_preu_svg($ID,$pvp,$nom,$u,$origen,$package=""){
 	if($ingredients=="Producte Natural")$ingredients="";
 	if($package!="")$package=". $package";
 	global $web_etiqueta;
-	return strtr(file_get_contents($file),array('$web'=>$web_etiqueta,'$pvp'=>$pvp,'$u'=>$u,'$origen'=>$origen,'$ingredients'=>$ingredients, '$nom'=>$nom1,'$nom2'=>$nom2, '$ID'=>$ID, '$pack'=>$package));
+	[$logo, $logoviewbox] = logo_etiqueta();
+	return strtr(file_get_contents($file),array('$logoviewbox'=>$logoviewbox,'$logo'=>$logo,'$web'=>$web_etiqueta,'$pvp'=>$pvp,'$u'=>$u,'$origen'=>$origen,'$ingredients'=>$ingredients, '$nom'=>$nom1,'$nom2'=>$nom2, '$ID'=>$ID, '$pack'=>$package));
 }
 function etiquetapreu($ID,$pvp,$nom,$u,$origen,$nf,$package=""){
 	$svg=generar_etiqueta_preu_svg($ID,$pvp,$nom,$u,$origen,$package);
