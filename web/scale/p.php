@@ -1,4 +1,13 @@
 <?php
+// p.php fa les feines de fons (etiquetes, PDFs, avisos): només el pot cridar el mateix servidor
+// (cron o scalebackground amb curl a localhost o a la seva pròpia adreça), mai des de fora.
+if(PHP_SAPI!=='cli'){
+	$p_ra=$_SERVER['REMOTE_ADDR'] ?? '';
+	if(!(strpos($p_ra,'127.')===0 || $p_ra==='::1' || $p_ra===($_SERVER['SERVER_ADDR'] ?? '-'))){
+		http_response_code(403);
+		exit;
+	}
+}
 /*
 Aquest script està pensat per executar-se en segon pla a través d'una crida periòdica
 a la línea de comandes tipus:

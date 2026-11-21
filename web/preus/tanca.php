@@ -19,6 +19,12 @@ divclass('row');
 tdiv();divclass('row');
 echo 'contrasenya';br();
 pass('contra',20);
+if(cal_clau_temporal()){
+	tdiv();divclass('row');
+	echo 'Contrasenya temporal';br();
+	echo '<input name="temporalkey" value="" size=20 autocomplete="off" />';
+}
+if(!empty($login_error)){tdiv();divclass('row');echo "<b>".htmlspecialchars($login_error)."</b>";}
 tdiv();divclass('row');
 sumit1('Entrar!');
 // address("Aqui has de posar usuari i contrasenya",left);

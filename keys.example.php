@@ -47,6 +47,12 @@ $receipt_printer_ip = '';                 // network receipt printer (RAW 9100);
 $receipt_printer_host = 'localhost';      // machine with the USB receipt printer (reached by ssh)
 $tag_destination = '';                    // scp destination for label files ('' = print locally)
 $midaetiqueta = '';                       // label size suffix: '' (default) or '57x45'
+// Logins from outside the local network / VPN / Tailscale
+$volclaullarga = false;                   // true: from outside, a daily temporary key is also required
+                                          // (read from the `adminer`.`key` table, row ID 1; rotate it yourself, e.g. nightly)
+// $xarxes_confianca = ['127.0.0.0/8', '::1/128', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'];
+$usuaris_sense_preus = [];                // usernames that may not open the price module (/preus)
+
 // Your own look and files (optional; the code works without them)
 $web_nom = '';                            // site name in the footer links ('' = the host name)
 $mytwitter = $myfacebook = $mytelegram = $myinstagram = '';   // footer social links

@@ -12,7 +12,8 @@ divclass("row");
 tdiv();divclass("row");
 echo 'contrasenya';br();
 pass('contra',5);
-if($volclaullarga)if (!preg_match('/^192\.168\..*|^10\..*|^127\.0\.0\.1$/',$_SERVER['REMOTE_ADDR'])){
+if(!empty($login_error)){br();echo "<b>".htmlspecialchars($login_error)."</b>";br();}
+if(function_exists('cal_clau_temporal') && cal_clau_temporal()){
 	br();echo 'Contrasenya temporal';br();
 	text('temporalkey',5);
 }

@@ -29,6 +29,7 @@ require_once("{$_SERVER['DOCUMENT_ROOT']}/../keys.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/estil.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/taula.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/lib.php");
+require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/autentica.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/tiquettpv.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/scale/phpgeneral/valsregal.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/plugins/carrega.php"); // connectors: veure /admin
@@ -68,32 +69,23 @@ if($w<$h)$_SESSION['vertical']=true;
 
 if(!isset($_SESSION['login']))$_SESSION['login']=false;
 if( $_SESSION['login']!=true){
-	if(isset($_REQUEST['user']) &&($_REQUEST['user']!="")){
-    		$_SESSION['user']=$_REQUEST['user'];
-		$_SESSION['contrasenya']=($_REQUEST["contra"]);
-		//debugtelegram($_REQUEST['user']);
-    	}
-    	if(isset($_SESSION['user'])&& ($_SESSION['user']!=""))	
-        if(contrasenya_ok(mysql1r("SELECT `password` from `users` where `username`='".$link->real_escape_string($_SESSION['user'])."'",$link),$_SESSION["contrasenya"]) &
-		(($_SESSION['user']!="") && $_SESSION["contrasenya"]!="")){
-		if($volclaullarga){if (!preg_match('/^192\.168\..*|^10\..*|^127\.0\.0\.1$/',$_SERVER['REMOTE_ADDR'])){
-			$my=mysqli_connect($myserver,$myuser,$mypassword,'adminer');
-			$temporalkey=$my->query("SELECT `value` from `key` where `ID`='1'")->fetch_row()[0];
-			if($_REQUEST['temporalkey']==$temporalkey){
-				$_SESSION['login']=true;
-				debugtelegram("{$w}x{$h} login\n{$_SESSION['user']}@{$_SERVER['REMOTE_ADDR']}",$_SERVER['HTTP_HOST']);
-        			$login=true;
-			}
-		}
-		}
-		else{ 
+	// usuari, contrasenya i (des de fora, amb $volclaullarga) clau temporal: veure phpgeneral/autentica.php
+	$intent=isset($_REQUEST['user']) && $_REQUEST['user']!="";
+	if($intent){
+		$_SESSION['user']=$_REQUEST['user'];
+		$_SESSION['contrasenya']=$_REQUEST['contra'] ?? '';
+		$_SESSION['temporalkey']=$_REQUEST['temporalkey'] ?? '';
+	}
+	$login=false;
+	if(isset($_SESSION['user']) && $_SESSION['user']!=""){
+		[$login,$login_error]=autentica($link,$_SESSION['user'],$_SESSION['contrasenya'] ?? '',$_SESSION['temporalkey'] ?? '',$intent);
+		if($login){
 			$_SESSION['login']=true;
+			unset($_SESSION['temporalkey']);
 			debugtelegram("{$w}x{$h} login\n{$_SESSION['user']}@{$_SERVER['REMOTE_ADDR']}",$_SERVER['HTTP_HOST']);
-        		$login=true;
 		}
-    	}
-    	else $login=false;
-	}	
+	}
+}
 else $login=true;
 	$uri=$_SERVER['SERVER_PORT']==80?'http://':'https://';
 	$uri.=$_SERVER['HTTP_HOST'];
