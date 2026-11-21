@@ -50,6 +50,7 @@ $midaetiqueta = '';                       // label size suffix: '' (default) or 
 // Logins from outside the local network / VPN / Tailscale
 $volclaullarga = false;                   // true: from outside, a daily temporary key is also required
                                           // (read from the `adminer`.`key` table, row ID 1; rotate it yourself, e.g. nightly)
+$clau_temporal_fitxer = '';                // optional: read the temporary key from this file instead (e.g. copied from another shop)
 // $xarxes_confianca = ['127.0.0.0/8', '::1/128', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'];
 $usuaris_sense_preus = [];                // usernames that may not open the price module (/preus)
 

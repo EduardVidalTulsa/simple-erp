@@ -4,7 +4,8 @@
  *
  * - Contrasenyes: password_hash() o, les antigues, text pla (contrasenya_ok).
  * - Xarxes de confiança: local, VPN (WireGuard) i Tailscale. Des de fora, si keys.php té
- *   $volclaullarga = true, cal també la clau temporal (adminer.key ID 1, es renova cada nit).
+ *   $volclaullarga = true, cal també la clau temporal (adminer.key ID 1, es renova cada nit),
+ *   o la d'una altra seu copiada a $clau_temporal_fitxer.
  *   Les xarxes es poden canviar a keys.php amb $xarxes_confianca (llista de CIDR).
  * - Límit d'intents: 5 errors des d'una mateixa adreça i 15 minuts de bloqueig.
  */
@@ -43,8 +44,13 @@ function cal_clau_temporal() {
 }
 
 function clau_temporal_ok($donada) {
-	global $myserver, $myuser, $mypassword;
+	global $myserver, $myuser, $mypassword, $clau_temporal_fitxer;
 	if ((string)$donada === '') return false;
+	// clau d'una altra seu, copiada a un fitxer (keys.php: $clau_temporal_fitxer)
+	if (!empty($clau_temporal_fitxer)) {
+		$k = is_readable($clau_temporal_fitxer) ? trim((string)file_get_contents($clau_temporal_fitxer)) : '';
+		return $k !== '' && hash_equals($k, (string)$donada);
+	}
 	try {
 		$my = mysqli_connect($myserver, $myuser, $mypassword, 'adminer');
 		$fila = $my->query("SELECT `value` FROM `key` WHERE `ID`='1'")->fetch_row();
