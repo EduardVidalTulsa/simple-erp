@@ -54,6 +54,10 @@ $clau_temporal_fitxer = '';                // optional: read the temporary key f
 // $xarxes_confianca = ['127.0.0.0/8', '::1/128', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'];
 $usuaris_sense_preus = [];                // usernames that may not open the price module (/preus)
 
+// Links to PDFs of documents with personal data (client, e-mail, VAT id or phone) are signed and last 24 h.
+// Use a long random value, the same on every shop that shares documents. Empty = plain uuid links (old behaviour).
+$pdf_token_secret = '';
+
 // Your own look and files (optional; the code works without them)
 $web_nom = '';                            // site name in the footer links ('' = the host name)
 $mytwitter = $myfacebook = $mytelegram = $myinstagram = '';   // footer social links

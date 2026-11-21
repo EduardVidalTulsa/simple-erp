@@ -1100,13 +1100,11 @@ function llistarelacions($e,$my,$do="llista1a"){
                     if($r['phone']!=""){
                         if (strlen($r['phone']) == 9 && $r['phone'][0] != '+') $r['phone']="+34".$r['phone'];
                         ainf("tel:{$r['phone']}","📲");
-                        if($pdf_public_host)$body=urlencode("{$pdf_public_host}/pdf/{$r['uuid']}.pdf");
-                            else $body=urlencode("{$uri}/pdf/{$r['uuid']}.pdf");//.html_relacio($r));
+                        $body=urlencode(enllac_pdf($r, $pdf_public_host ?: $uri)); // amb dades personals: enllaç de 24 h
                             //$mailbody=rawurlencode(html_relacio($r));
                             //debugtelegram($r,'relacio a mati','302887425');
                             $subject=str_replace(" ","%20","Enviem enllaç a {$r['tipus_relacio']['Value']} de la data {$r['data']} i Valor {$r['Total']}€ ");
-                            if ($pdf_public_host)ainf("sms:{$r['phone']}?body=Enviem%20{$r['tipus_relacio']['Value']}%20{$pdf_public_host}/pdf/{$r['uuid']}.pdf ","📟");
-                                else ainf("sms:{$r['phone']}?body=Enviem%20{$r['tipus_relacio']['Value']}%20{$uri}/pdf/{$r['uuid']}.pdf ","📟");
+                            ainf("sms:{$r['phone']}?body=Enviem%20{$r['tipus_relacio']['Value']}%20".enllac_pdf($r, $pdf_public_host ?: $uri)." ","📟");
                                 ainf("https://api.whatsapp.com/send?phone={$r['phone']}&text=$subject$body",imgr("../scale/img/whatsapp.svg","22px","22px"));
                                 if(isset($r['email'])){
                                     //ainf("mailto:{$r['email']}?subject=$subject&body=$mailbody",imgr("{$scale_uri}img/thunderbird.svg",'20px','20px'));
@@ -1435,6 +1433,32 @@ function tlineadescripcio($string){
 	echo $string;
 	tdiv();tdiv();
 }
+// ---- PDFs de les relacions: enllaços públics ----
+// Relació anònima (sense client ni dades de contacte): /pdf/<uuid>.pdf, permanent.
+// Relació amb dades personals: /pdf/<token>.pdf, signat amb $pdf_token_secret (keys.php, el mateix a
+// totes les seus perquè qualsevol el pugui validar) i vàlid 24 h. Sense secret, com abans (uuid).
+function relacio_personal($r) {
+	foreach (['email', 'NIF', 'phone'] as $c) if (trim(urldecode((string)($r[$c] ?? ''))) !== '') return true;
+	return (int)($r['ID_client'] ?? 0) !== 0;
+}
+function pdf_token($uuid, $hores = 24) {
+	global $pdf_token_secret;
+	$exp = str_pad(dechex(time() + $hores * 3600), 8, '0', STR_PAD_LEFT);
+	return 't' . $exp . $uuid . substr(hash_hmac('sha256', $exp . $uuid, (string)$pdf_token_secret), 0, 20);
+}
+// torna ['uuid' => ..., 'caducat' => bool] si la signatura és bona; null si no és un token nostre
+function pdf_token_llegeix($t) {
+	global $pdf_token_secret;
+	if (empty($pdf_token_secret) || !preg_match('/^t([0-9a-f]{8})([A-Za-z0-9]+)([0-9a-f]{20})$/', (string)$t, $m)) return null;
+	if (!hash_equals(substr(hash_hmac('sha256', $m[1] . $m[2], (string)$pdf_token_secret), 0, 20), $m[3])) return null;
+	return ['uuid' => $m[2], 'caducat' => hexdec($m[1]) < time()];
+}
+// enllaç públic al PDF d'una relació; $base: https://servidor (amb $prefix /pdf) o ja amb /pdf ($prefix '')
+function enllac_pdf($r, $base, $prefix = '/pdf') {
+	global $pdf_token_secret;
+	$id = (!empty($pdf_token_secret) && relacio_personal($r)) ? pdf_token($r['uuid']) : $r['uuid'];
+	return rtrim($base, '/') . $prefix . '/' . $id . '.pdf';
+}
 function buscauuid($uuid,$link){
 	$q="show tables like '%_index_relacio'";
 	$l=$link->query($q);
@@ -1623,12 +1647,12 @@ $html.=
 Moltes gràcies per confiar amb nosaltres
 Podeu trobar la copia en pdf d'aquest document a ";
 // Usar url_public si està ple, si no usar l'URL local
+// (amb dades personals l'enllaç dura 24 h: el pdf també va adjunt al correu)
 if(!empty($empresa['url_public'])){
-    $html.=ar("https://{$empresa['url_public']}/pdf/{$r['uuid']}.pdf");
+    $html.=ar(enllac_pdf($r, "https://{$empresa['url_public']}"));
 } else {
     $port=$_SERVER['SERVER_PORT']==80?"http":"https";
-    if($pdf_public_host)$html.=ar("{$pdf_public_host}/pdf/{$r['uuid']}.pdf");
-    else $html.=ar("{$port}://{$_SERVER['HTTP_HOST']}/pdf/{$r['uuid']}.pdf");
+    $html.=ar(enllac_pdf($r, $pdf_public_host ?: "{$port}://{$_SERVER['HTTP_HOST']}"));
 }
 //$html.=prer($_SERVER);
 $html.="

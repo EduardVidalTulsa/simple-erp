@@ -111,8 +111,7 @@ rm {$_SERVER['DOCUMENT_ROOT']}/pdf/*.log -f;
 		//exec("cd {$_SERVER['DOCUMENT_ROOT']}/scale/pdf; pdflatex -interaction=nonstopmode  {$pdf['uuid']}.tex; chown http * -f",$rexec);
 		//exec("cd {$_SERVER['DOCUMENT_ROOT']}/scale/pdf; cp {$pdf['uuid']}.pdf {$_SERVER['DOCUMENT_ROOT']}/pdf",$rexec);
 		if($pdf_scp_target)exec ("scp {$_SERVER['DOCUMENT_ROOT']}/scale/pdf/{$pdf['uuid']}.pdf {$pdf_scp_target} ");
-		if($pdf_public_host)$public="{$pdf_public_host}/pdf/{$pdf['uuid']}.pdf";
-		else $public="https://{$_SERVER['HTTP_HOST']}/pdf/{$pdf['uuid']}.pdf";
+		$public=enllac_pdf($r, $pdf_public_host ?: "https://{$_SERVER['HTTP_HOST']}"); // amb dades personals: 24 h
 		$telegramme=urlencode("Hola hem fet: ".mysql1r("SELECT `Value` FROM `tipus_relacio` WHERE `ID`='{$pdf['ID_tipus_relacio']}'",$link)." {$empresa['ID']}.{$pdf['ID']} \na nom de ".urldecode("{$pdf['fiscal_name']}+{$pdf['email']}")."\nté el teléfon: {$pdf['phone']}\n".$public);
 		//$public=urlencode($public);
 		$response = file_get_contents("https://api.telegram.org/bot$telegramtoken/sendMessage?chat_id={$empresa['telegram_relacions']}&text=$telegramme" );

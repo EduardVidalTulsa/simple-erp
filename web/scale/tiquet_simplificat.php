@@ -23,7 +23,7 @@ $link->close();
 
 // Genera QR apuntant al PDF públic
 global $pdf_public_url;
-$qr_url = (!empty($pdf_public_url) ? $pdf_public_url : "https://{$_SERVER['HTTP_HOST']}/pdf") . "/{$r['uuid']}.pdf";
+$qr_url = enllac_pdf($r, !empty($pdf_public_url) ? $pdf_public_url : "https://{$_SERVER['HTTP_HOST']}/pdf", ''); // amb dades personals: 24 h
 $writer = new SvgWriter();
 $qrCode = new QrCode($qr_url);
 $qrCode->setMargin(2);
