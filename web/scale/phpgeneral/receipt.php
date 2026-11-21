@@ -59,7 +59,7 @@ if(!isset($tall_punts))$tall_punts=56;
 
 if (!extension_loaded('mbstring'))debugtelegram("Aquest servidor no té mbstring habilitat, pots habilitar-ho a php.ini?",$_SERVER['HTTP_HOST']);
 
-class PrinterTiquet extends Printer{
+class Printerfestuc extends Printer{
 	// Empresa.tiquet_cut_before_head1_bool=0: cada tiquet comença amb la seva capçalera (aquí)
 	// i acaba amb cut(). A 1 no fa res, la capçalera ja la va imprimir tallacapcalera().
 	public function capcalera($empresa){

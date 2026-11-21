@@ -326,7 +326,8 @@ if($login){
 	// aqui fem el peu de pagina, amb l'ultima línea, el rellotge i els tiquets del dia
 
 	if($w<$h)div('hora',"style =\"position:absolute; top:680"."px; left:".(($w)-400)."px; width:".($w)."px;  height:13px; font-size:15px;padding:2px;\"");
-	else div('hora',"style =\"position:absolute; bottom:".(15)."px; left:".(($w/2)-150)."px; width:".($w/2)."px;  height:13px; font-size:15px;padding:2px;\"");
+	// com una signatura: a baix a la dreta (5% del marge dret, 2% de baix), respecte de la finestra
+	else div('hora',"style =\"position:fixed; bottom:2%; right:5%; height:13px; font-size:15px;padding:2px;white-space:nowrap;\"");
 	echo "id:{$ID_Empresa}.$idbascula ".date("H:i:s");
 	tdiv();
     tdiv();

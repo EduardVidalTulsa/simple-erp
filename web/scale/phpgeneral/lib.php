@@ -1708,15 +1708,34 @@ function mostrar_javascript_pesa() {
                     success:function(data){
                         var info = JSON.parse(data);
                         $("#ultim_linia").html(info.ultim);
-                        $("#info_hora").html(info.hora);
                     }
                 });
             };
+            // l\'última línia només canvia en entrar-ne una (case_entralinea redirigeix i recarrega la pàgina):
+            // n\'hi ha prou de demanar-la un cop en carregar, no cada 300 ms
+            actualitzarInfo();
+            // subtotals dels venedors: si una altra bàscula hi afegeix una línia, es veu aquí sense prémer res.
+            // subtotals.php compara el hash i només torna el codi html quan ha canviat
+            var hashsubtotals = $("#subtotals").attr("data-hash");
+            function actualitzarSubtotals(){
+                $.ajax({
+                    url:"subtotals.php",
+                    method:"POST",
+                    data:{"hash":hashsubtotals},
+                    dataType:"json",
+                    success:function(r){
+                        if(!r || r.html === undefined || r.hash === hashsubtotals) return;
+                        hashsubtotals = r.hash;
+                        $("#subtotals").html(r.html);
+                        $(".caixatotal").css("font-size", r.mida + "px");
+                    }
+                });
+            };
+            setInterval(actualitzarSubtotals, 2000);
             // 300 ms: pesa.py llegeix la bàscula cada ~0,8 s, més sovint no aporta res
             setInterval(function() {
                 document.getElementById("magic").focus();
                 tlinea(document.getElementById("magic").value);
-                actualitzarInfo();
             }, 300);
         });
     </script>';
@@ -1726,17 +1745,7 @@ function mostrar_javascript_pesa() {
  * Mostra el peu amb els venedors actius avui
  */
 function mostrar_peu_venedors($w, $h, $prefixrelacio, $link, $ID_Empresa, $scale_uri, $decimalsing, $thousandsing) {
-    $FROMindex_relacio = "FROM {$prefixrelacio}index_relacio";
-    $qva = "SELECT ID_Venedor $FROMindex_relacio WHERE `data` = CURDATE() OR `relacio_oberta`='1'
-            GROUP BY ID_Venedor ORDER BY ID_Venedor LIMIT 8";
-    
-    $venedors_avui = $link->query($qva);
-    
-    if($w < $h) {
-        $mida_lletra = 56 - (($venedors_avui->num_rows - 2) * 10);
-    } else {
-        $mida_lletra = 64 - (($venedors_avui->num_rows - 3) * 5);
-    }
+    list($html, $mida_lletra) = peu_venedors_html($w, $h, $prefixrelacio, $link, $ID_Empresa, $scale_uri, $decimalsing, $thousandsing);
     
     if($w < $h) {
         $scaixa = "style =\"position:absolute;background-color:#ACAB00;
@@ -1749,10 +1758,33 @@ function mostrar_peu_venedors($w, $h, $prefixrelacio, $link, $ID_Empresa, $scale
     }
     
     divclass('caixatotal', $scaixa);
+    // #subtotals es refresca sol via subtotals.php (veure mostrar_javascript_pesa)
+    echo '<div id="subtotals" data-hash="'.md5($html.$mida_lletra).'">'.$html.'</div>';
+}
+
+/**
+ * Resum dels venedors d'avui (o amb relació oberta): retorna [html, mida_lletra].
+ * El fan servir la pantalla de pesar i subtotals.php (refresc per AJAX quan una
+ * altra bàscula afegeix una línia).
+ */
+function peu_venedors_html($w, $h, $prefixrelacio, $link, $ID_Empresa, $scale_uri, $decimalsing, $thousandsing) {
+    $FROMindex_relacio = "FROM {$prefixrelacio}index_relacio";
+    $qva = "SELECT ID_Venedor $FROMindex_relacio WHERE `data` = CURDATE() OR `relacio_oberta`='1'
+            GROUP BY ID_Venedor ORDER BY ID_Venedor LIMIT 8";
     
+    $venedors_avui = $link->query($qva);
+    
+    if($w < $h) {
+        $mida_lletra = 56 - (($venedors_avui->num_rows - 2) * 10);
+    } else {
+        $mida_lletra = 64 - (($venedors_avui->num_rows - 3) * 5);
+    }
+    
+    ob_start();
     while($v = $venedors_avui->fetch_object()) {
         mostrar_info_venedor($v, $FROMindex_relacio, $link, $ID_Empresa, $scale_uri, $decimalsing, $thousandsing);
     }
+    return array(ob_get_clean(), $mida_lletra);
 }
 
 /**
@@ -1841,8 +1873,8 @@ function mostrar_divs_fixos($w, $h) {
     // Div per mostrar última línia (es posiciona al lateral dret o baix)
     echo '<div id="ultim_linia"></div>';
     
-    // Div per mostrar hora i ID bàscula (es posiciona SOTA última línia)
-    echo '<div id="info_hora"></div>';
+    // (l'hora i l'id de la bàscula ja els escriu tlinea.php sota el resum dels venedors;
+    //  aquí n'hi havia un duplicat, #info_hora, tret el 2026-11-21)
     
     // JavaScript per actualitzar aquests divs amb les mides correctes del client
     echo '<script>
@@ -1857,16 +1889,6 @@ function mostrar_divs_fixos($w, $h) {
                 ultimLiniaDiv.style = "position:absolute; top:265px; left:25px; width:480px; font-size:25px; padding:2px;";
             } else {
                 ultimLiniaDiv.style = "position:absolute; top:" + (h-180) + "px; left:25px; width:" + (w/2) + "px; font-size:25px; padding:2px;";
-            }
-        }
-        
-        // Actualitzar posició div hora (SOTA última línia)
-        var infoHoraDiv = document.getElementById("info_hora");
-        if(infoHoraDiv) {
-            if(w < h) {
-                infoHoraDiv.style = "position:absolute; top:295px; left:25px; width:480px; height:13px; font-size:15px; padding:2px;";
-            } else {
-                infoHoraDiv.style = "position:absolute; top:" + (h-150) + "px; left:25px; width:" + (w/2) + "px; height:13px; font-size:15px; padding:2px;";
             }
         }
     }

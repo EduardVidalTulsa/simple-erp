@@ -4,7 +4,7 @@ use Mike42\Escpos\Printer;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\EscposImage;
 require("login.php");
-require_once("phpgeneral/receipt.php"); // PrinterTiquet i tallacapcalera, comú amb tiquet.php
+require_once("phpgeneral/receipt.php"); // Printerfestuc i tallacapcalera, comú amb tiquet.php
 if(!$login){
 	header("Location: $scale_uri");
 	die;
@@ -12,7 +12,7 @@ if(!$login){
 $ticket="out.lp";
 try {
 $connector = new FilePrintConnector("out.lp");
-$printer = new PrinterTiquet($connector);
+$printer = new Printerfestuc($connector);
 /* Initialize */
 $printer -> initialize();
 $printer -> selectCharacterTable(2);

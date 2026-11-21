@@ -42,7 +42,7 @@ if ($_SESSION['Empresa']['bool_ticket_printer']=='1'){
 try {
 $ticket=$r['uuid'].'.lp';
 $connector = new FilePrintConnector(__DIR__."/$ticket");
-$printer = new PrinterTiquet($connector);
+$printer = new Printerfestuc($connector);
 /* Initialize */
 $printer -> initialize();
 $printer -> selectCharacterTable($taula);

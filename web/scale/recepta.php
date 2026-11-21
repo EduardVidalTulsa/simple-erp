@@ -67,7 +67,7 @@ $ticket="out.lp";
 if ($_SESSION['Empresa']['bool_ticket_printer']=='1'){
 try {
 $connector = new FilePrintConnector("out.lp");
-$printer = new PrinterTiquet($connector);
+$printer = new Printerfestuc($connector);
 /* Initialize */
 $printer -> initialize();
 $printer -> selectCharacterTable($taula);
