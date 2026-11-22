@@ -72,9 +72,11 @@ INSERT IGNORE INTO Clients (ID, Value, fiscal_address, Poblacio, NIF, bool_Activ
 
 -- Example terms for the public sign-up (/condicions, /altaclient). Replace them with your own text: the hash
 -- identifies the exact version every client accepted.
-SET @cond = '<p>Example terms of use and privacy notice. Write here who keeps the data, what for, for how long and how to unsubscribe.</p>';
-INSERT IGNORE INTO Condicions (versio, idioma, titol, contingut, hash) VALUES ('1', 'ca', 'Condicions i protecció de dades', @cond, SHA2(@cond, 256)),
-       ('1', 'en', 'Terms and privacy', @cond, SHA2(@cond, 256));
+-- Never edit a published version: clients' consent stores version + hash. Add a new version and set vigent=0 on the old one.
+SET @cond_ca = '<p>Condicions d''exemple. Escriu aquí qui guarda les dades, per a què, durant quant de temps i com donar-se de baixa.</p>\n\n<h2>Galetes</h2>\n<p>Aquest lloc web només fa servir galetes tècniques, necessàries perquè funcioni: la sessió del personal, la de l''àrea de clients (dura 30 dies i s''esborra quan surts del compte), les que protegeixen els formularis i, al navegador, l''idioma que tries. No en fem servir d''analítica, de publicitat ni de tercers; per això no et demanem consentiment (article 22.2 de la Llei 34/2002, LSSI). Les pots esborrar quan vulguis des del navegador: si ho fas, hauràs de tornar a entrar.</p>';
+SET @cond_en = '<p>Example terms of use and privacy notice. Write here who keeps the data, what for, for how long and how to unsubscribe.</p>\n\n<h2>Cookies</h2>\n<p>This website only uses technical cookies, which it needs to work: the staff session, the client area session (it lasts 30 days and is deleted when you sign out), the ones that protect the forms and, in your browser, the language you choose. We do not use analytics, advertising or third-party cookies, so we do not ask for your consent (article 22.2 of Spanish Law 34/2002, LSSI; other countries have similar ePrivacy rules). You can delete them from your browser whenever you like: if you do, you will have to sign in again.</p>';
+INSERT IGNORE INTO Condicions (versio, idioma, titol, contingut, hash) VALUES ('1', 'ca', 'Condicions i protecció de dades', @cond_ca, SHA2(@cond_ca, 256)),
+       ('1', 'en', 'Terms and privacy', @cond_en, SHA2(@cond_en, 256));
 
 INSERT IGNORE INTO tarifes (ID, data_hora, user, id_dealer, id_familia, bool_in_bulk, cost_price, pvp, pvpi, pv1, pv1i, pv2, pv2i, pv3, pv3i, pv4, pv4i, historic, ultimpreu, tipusiva)
 VALUES (1, '2020-01-01 00:00:00', 'admin', 0, 1, 1, 10.00, 18.00, 1.80, 15.00, 1.50, 13.00, 1.30, 12.00, 1.20, 11.00, 1.10, 1, 1, 0),
