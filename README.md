@@ -18,6 +18,7 @@ family business with several shops; this is a cleaned-up copy of its code.
 | `web/relacions/` | Sales documents: delivery notes, invoices, quotes, orders, inventories, transfers; PDF with LaTeX, links by e-mail, SMS or WhatsApp |
 | `web/makevoucher/` | Gift/discount vouchers: create a voucher with a one-time QR code, print it on the receipt printer, redeem it at the scale's subtotal screen (capped to what's left to pay; the rest is paid as usual). Only on the central site when there are several (see below) |
 | `web/altaclient/`, `web/condicions/` | Public new-client sign-up: the client accepts the terms (`/condicions`, versioned in the `Condicions` table) and confirms each e-mail address by a link before the client is created; a proof-of-work challenge replaces the captcha, unconfirmed requests are deleted after 48 h (`php web/altaclient/neteja.php` hourly) and every step is logged in `Clients_consentiment`. Logged-in staff see and edit the client list instead |
+| `web/client/` | Client area: clients sign in with their verified e-mail (a one-time link or 6-digit code, no password) and see their invoices, delivery notes and receipts of the last five years with net amount, VAT per rate and total, plus a yearly summary (invoices, receipts and delivery notes not yet invoiced) for the Spanish 347 return; they can also edit their details (all but the VAT id), phones and extra e-mails, or unsubscribe. Runs on the server with `$ALTCHA_KEY` |
 | `web/plugins/`, `web/admin/` | Plugins (door switch, queue tickets, vouchers) that are turned on and configured at `/admin` (see below) |
 | `web/pdf/` | Public access to the generated PDFs |
 | `web/index.html` | Start page |
@@ -139,7 +140,10 @@ volum `config`.
 pressupostos… amb PDF), `makevoucher` (xecs regal/descompte amb QR d'un sol ús) i `altaclient`
 (alta pública de clients: accepta les condicions de `/condicions` i confirma cada correu per un enllaç;
 les sol·licituds sense confirmar s'esborren a les 48 h amb `php web/altaclient/neteja.php` cada hora).
-Els tiquets només s'envien per correu a adreces verificades i porten un enllaç de baixa. Les feines de fons les fa `scale/p.php`, que una sola
+Els tiquets només s'envien per correu a adreces verificades i porten un enllaç de baixa.
+A `/client/` els clients entren amb el correu (enllaç o codi d'un sol ús, sense contrasenya) i hi veuen les
+factures, albarans i tiquets dels últims cinc anys amb base, IVA i total, i un resum anual per al model 347;
+hi poden canviar les seves dades (menys el NIF), telèfons i correus, o donar-se de baixa. Les feines de fons les fa `scale/p.php`, que una sola
 màquina ha de cridar cada pocs segons. A `hardware/` hi ha els scripts que llegeixen una bàscula
 física per port sèrie i n'alimenten el pes a la taula `ultimpes`.
 

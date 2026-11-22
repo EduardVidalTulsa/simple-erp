@@ -3,6 +3,7 @@
 // Marcadors: {LINK} enllaç de confirmació, {COND} enllaç a les condicions, {URL} enllaç a les condicions dins l'etiqueta.
 return [
 'ca' => [
+ 'have_account' => 'Ja ets client?', 'have_account_link' => 'Entra al teu compte',
  'idioma_nom' => 'Català',
  'title' => 'Alta de client',
  'intro' => "Omple les dades i t'enviarem un correu per confirmar l'adreça. No et donem d'alta fins que la confirmis.",
@@ -34,6 +35,7 @@ return [
  'invalid' => 'Enllaç no vàlid.', 'conflict' => 'Ara mateix ja existeix un client amb aquestes dades. Contacta amb nosaltres.',
 ],
 'es' => [
+ 'have_account' => '¿Ya eres cliente?', 'have_account_link' => 'Entra en tu cuenta',
  'idioma_nom' => 'Castellano',
  'title' => 'Alta de cliente',
  'intro' => 'Rellena los datos y te enviaremos un correo para confirmar la dirección. No te damos de alta hasta que la confirmes.',
@@ -65,6 +67,7 @@ return [
  'invalid' => 'Enlace no válido.', 'conflict' => 'Ahora mismo ya existe un cliente con estos datos. Contacta con nosotros.',
 ],
 'fr' => [
+ 'have_account' => 'Déjà client ?', 'have_account_link' => 'Accédez à votre compte',
  'idioma_nom' => 'Français',
  'title' => 'Inscription client',
  'intro' => "Remplissez les données et nous vous enverrons un e-mail pour confirmer l'adresse. Nous ne vous inscrivons qu'après cette confirmation.",
@@ -96,6 +99,7 @@ return [
  'invalid' => 'Lien non valide.', 'conflict' => 'Un client existe déjà avec ces données. Contactez-nous.',
 ],
 'en' => [
+ 'have_account' => 'Already a client?', 'have_account_link' => 'Sign in to your account',
  'idioma_nom' => 'English',
  'title' => 'Customer sign-up',
  'intro' => 'Fill in your details and we will email you to confirm your address. We do not register you until you confirm it.',

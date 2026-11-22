@@ -1,0 +1,30 @@
+@import url("../altaclient/style.css");
+main{max-width:46rem}
+h2{font-size:1.15rem;margin:1.6em 0 .4em;border-bottom:1px solid var(--lin);padding-bottom:.2em}
+.cap{display:flex;justify-content:space-between;align-items:center;gap:1em}
+.cap .lang{text-align:left}.cap .lang a{margin:0 .8em 0 0}
+.surt button{padding:5px 12px;font-size:.9rem}
+.client{font-size:1.05rem}
+.nota,.intro{color:var(--mut);font-size:.9rem}
+.llista{list-style:none;padding:0;margin:.4em 0}
+.llista li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--lin)}
+.llista form{margin:0}.llista button{padding:4px 10px;font-size:.9rem}
+.llista small{color:var(--mut)}
+form.row{margin:.6em 0}
+.ok{border:1px solid var(--ok);color:var(--ok);border-radius:6px;padding:10px 14px;margin:1em 0}
+.tria{margin:.5em 0}.tria button{width:100%;text-align:left}
+.perill{color:var(--err)}button.perill{background:var(--err);border-color:var(--err);color:#fff}
+.peu{margin-top:2.5em;font-size:.9rem;color:var(--mut)}
+.dades{margin:1em 0;border:1px solid var(--lin);border-radius:6px;padding:8px 14px}
+.dades summary{cursor:pointer;font-weight:600}
+input:disabled{opacity:.6}
+ul.docs{list-style:none;padding:0;margin:.4em 0}
+ul.docs li{padding:8px 0;border-bottom:1px solid var(--lin)}
+.docs .l1{display:flex;flex-wrap:wrap;gap:.3em .8em;align-items:baseline}
+.docs .data{color:var(--mut);font-variant-numeric:tabular-nums}.docs .botiga{color:var(--mut);font-size:.9rem;margin-left:auto}
+.docs .l2{display:flex;flex-wrap:wrap;gap:.2em 1.2em;font-size:.9rem;color:var(--mut);margin-top:.2em;font-variant-numeric:tabular-nums}
+.docs .l2 .tot{color:var(--fg);font-weight:600;margin-left:auto}
+.filtre{display:flex;flex-wrap:wrap;gap:6px}.filtre a{border:1px solid var(--lin);border-radius:14px;padding:2px 10px;text-decoration:none;font-size:.9rem}
+.filtre a.actiu{background:var(--acc);border-color:var(--acc);color:#fff}
+h3.any{font-size:1rem;margin:1.2em 0 .2em;color:var(--mut)}
+.resum{margin:.3em 0 1em;padding:8px 10px;border:1px solid var(--lin);border-radius:6px}.resum .t{font-weight:600}.resum .l2{display:flex;flex-wrap:wrap;gap:.2em 1.2em;font-variant-numeric:tabular-nums}.resum .l2 .tot{font-weight:600;margin-left:auto}.resum .nota{font-size:.8rem;margin-top:.3em}

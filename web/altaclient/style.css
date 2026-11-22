@@ -16,3 +16,4 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 #powstatus{color:var(--mut);font-size:.9rem;margin:.6em 0}
 .req{color:var(--mut);font-size:.9rem}
+.compte{margin:.4em 0 1em}

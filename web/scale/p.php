@@ -144,7 +144,11 @@ rm {$_SERVER['DOCUMENT_ROOT']}/pdf/*.log -f;
 	    			$mail->setFrom($empresa['email'], $empresa['Value']);
 	    			//$mail->setFrom($em['user'], $empresa['Value']);
 	    			foreach ($dest as $k => $d) $mail->addAddress($d, $k ? '' : urldecode($pdf['fiscal_name']));     // destinataris verificats
-				$baixa_html = ''; $baixa_txt = '';
+				// àrea de clients (factures, dades) i, per a cada adreça, l'enllaç de baixa
+				$compte = tiquet_url_central($link);
+				$compte = $compte === '' ? '' : $compte . '/client/';
+				$baixa_html = $compte === '' ? '' : '<p style="font-size:13px;color:#444">Els teus tiquets i factures, i les teves dades: <a href="' . htmlspecialchars($compte) . '">' . htmlspecialchars($compte) . '</a><br>Tus tiques y facturas, y tus datos: <a href="' . htmlspecialchars($compte) . '">' . htmlspecialchars($compte) . '</a></p>';
+				$baixa_txt = $compte === '' ? '' : "Els teus tiquets i factures / Tus tiques y facturas: $compte\n";
 				foreach ($dest as $d) {
 					$u = tiquet_enllac_baixa($link, $r['ID_client'], $d);
 					if ($u === '') continue;

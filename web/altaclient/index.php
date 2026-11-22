@@ -117,6 +117,7 @@ $fila = fn($name, $type, $val, $T) => '<div class="row"><input type="' . $type .
 <div class="lang"><?php foreach (ac_i18n() as $k => $t) if ($k !== $lang) echo '<a href="?lang=' . h($k) . '">' . h($t['idioma_nom']) . '</a>'; ?></div>
 <h1><?= h($T['title']) ?></h1>
 <p class="intro"><?= h($T['intro']) ?></p>
+<p class="compte"><?= h($T['have_account']) ?> <a href="../client/?lang=<?= h($lang) ?>"><?= h($T['have_account_link']) ?></a></p>
 <?php if ($errors): ?><div class="err" role="alert"><b><?= h($T['err_head']) ?></b><ul><?php foreach ($errors as $e) echo '<li>' . h($e) . '</li>'; ?></ul></div><?php endif; ?>
 <form id="altaform" method="post" action="./" data-verifying="<?= h($T['verifying']) ?>" data-ready="<?= h($T['ready']) ?>" data-error="<?= h($T['pow_error']) ?>" data-remove="<?= h($T['remove']) ?>">
 <input type="hidden" name="csrf" value="<?= h($_SESSION['ac_csrf']) ?>"><input type="hidden" name="lang" value="<?= h($lang) ?>"><input type="hidden" name="altcha" id="altcha" value="">

@@ -33,13 +33,19 @@ function tiquet_signa_baixa($ID_client, $email) {
 	return substr(hash_hmac('sha256', 'baixa|' . (int)$ID_client . '|' . strtolower(trim((string)$email)), (string)$pdf_token_secret), 0, 32);
 }
 
-/** Enllaç a la pàgina de baixa de la central (Empresa 1 = central, url_seu; si no, $altaclient_url de keys.php) */
-function tiquet_enllac_baixa($link, $ID_client, $email) {
+/** Adreça pública de la central (Empresa 1 = central, url_seu; si no, $altaclient_url de keys.php); '' si no n'hi ha */
+function tiquet_url_central($link) {
 	static $base = null;
 	if($base === null) {
 		try { $base = rtrim((string)$link->query("SELECT url_seu FROM Empresa WHERE ID=1")->fetch_row()[0], '/'); } catch(Throwable $e) { $base = ''; }
 		if(!preg_match('#^https://#', $base)) { global $altaclient_url; $base = rtrim((string)($altaclient_url ?? ''), '/'); $base = preg_replace('#/altaclient$#', '', $base); }
 	}
-	if($base === '') return '';   // sense adreça pública no hi ha enllaç de baixa
+	return $base;
+}
+
+/** Enllaç a la pàgina de baixa de la central ('' si no hi ha adreça pública) */
+function tiquet_enllac_baixa($link, $ID_client, $email) {
+	$base = tiquet_url_central($link);
+	if($base === '') return '';
 	return $base . '/altaclient/baixa.php?' . http_build_query(['c' => (int)$ID_client, 'e' => $email, 's' => tiquet_signa_baixa($ID_client, $email)]);
 }

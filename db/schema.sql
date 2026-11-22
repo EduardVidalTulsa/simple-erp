@@ -646,5 +646,40 @@ CREATE TABLE IF NOT EXISTS `Clients_altcha_usats` (
   KEY `usat` (`usat`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Àrea de clients (/client/): enllaços i codis d'un sol ús per entrar o confirmar un correu secundari, i sessions
+CREATE TABLE IF NOT EXISTS `Clients_token` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tipus` enum('login','email') NOT NULL COMMENT 'login: entrar al compte; email: confirmar un correu secundari',
+  `email` varchar(255) NOT NULL,
+  `ID_Client` int(11) DEFAULT NULL,
+  `token_hash` char(64) NOT NULL COMMENT 'sha256 del token de l''enllaç',
+  `codi_hash` char(64) DEFAULT NULL COMMENT 'sha256 del codi de 6 xifres (només login)',
+  `intents` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `usos` tinyint(3) unsigned NOT NULL DEFAULT 0 COMMENT 'cops que s''ha fet servir l''enllaç (login: fins a 3, pels escàners dels correus)',
+  `idioma` varchar(5) DEFAULT NULL,
+  `ip` varchar(45) DEFAULT NULL,
+  `creat` datetime NOT NULL DEFAULT current_timestamp(),
+  `caduca` datetime NOT NULL,
+  `usat` datetime DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `token_hash` (`token_hash`),
+  KEY `email_creat` (`email`,`creat`),
+  KEY `ip_creat` (`ip`,`creat`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `Clients_sessio` (
+  `token_hash` char(64) NOT NULL COMMENT 'sha256 de la galeta',
+  `email` varchar(255) NOT NULL,
+  `ID_Client` int(11) DEFAULT NULL COMMENT 'client triat (un correu pot ser de més d''un client)',
+  `creat` datetime NOT NULL DEFAULT current_timestamp(),
+  `darrer` datetime NOT NULL DEFAULT current_timestamp(),
+  `caduca` datetime NOT NULL,
+  `ip` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`token_hash`),
+  KEY `email` (`email`),
+  KEY `caduca` (`caduca`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- El connector de torns crea Empresa_<ID>_torn per a cada empresa que el fa servir (plugins/torn/torn.php).
 SET FOREIGN_KEY_CHECKS=1;
