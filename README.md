@@ -21,7 +21,7 @@ family business with several shops; this is a cleaned-up copy of its code.
 | `web/client/` | Client area: clients sign in with their verified e-mail (a one-time link or 6-digit code, no password) and see their invoices, delivery notes and receipts of the last five years with net amount, VAT per rate and total, plus a yearly summary (invoices, receipts and delivery notes not yet invoiced) for the Spanish 347 return; they can also edit their details (all but the VAT id), phones and extra e-mails, or unsubscribe. Runs on the server with `$ALTCHA_KEY` |
 | `web/plugins/`, `web/admin/` | Plugins (door switch, queue tickets, vouchers) that are turned on and configured at `/admin` (see below) |
 | `web/pdf/` | Public access to the generated PDFs |
-| `web/index.html` | Start page |
+| `web/index.php` | Start page: public links to staff sign-in, the client area and client sign-up; once signed in, links to the scale, prices and sales documents |
 | `hardware/` | Shell scripts that read a physical serial-port scale and feed its weight into the `ultimpes` table that `web/scale/` polls; adapt the serial protocol to your own scale model |
 
 Receipts are e-mailed only to the client's verified addresses (main one plus the copies in `Clients_email`),

@@ -43,7 +43,7 @@ server {
     listen 80;
     server_name $DOMAIN;
     root $DEST/web;
-    index index.html index.php;
+    index index.php index.html;
     client_max_body_size 20m;
     location ~ /(vendor|composer\.(json|lock))  { deny all; }
     location ~ \.(lp|tex|log|aux|ps)\$          { deny all; }
