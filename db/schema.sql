@@ -140,6 +140,8 @@ CREATE TABLE IF NOT EXISTS `Clients` (
   `comercial_name` varchar(255) DEFAULT NULL COMMENT 'Nom comercial',
   `deliver_address` varchar(255) DEFAULT NULL COMMENT 'Adreça d''entrega',
   `email` varchar(255) DEFAULT NULL COMMENT 'Correu electrònic',
+  `email_verificat` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'el client ha confirmat el correu (només llavors se li envien els tiquets)',
+  `email_verificat_data` datetime DEFAULT NULL,
   PRIMARY KEY (`ID`),
   KEY `id_tarifa` (`id_tarifa`),
   CONSTRAINT `Clients_ibfk_1` FOREIGN KEY (`id_tarifa`) REFERENCES `tarifa` (`ID`) ON DELETE NO ACTION,
@@ -564,5 +566,85 @@ CREATE TABLE IF NOT EXISTS `plugin_usuari` (
   `config` text DEFAULT NULL,
   PRIMARY KEY (`username`,`plugin`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Correus addicionals del client (còpies dels tiquets; només si verificat=1)
+CREATE TABLE IF NOT EXISTS `Clients_email` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ID_Client` int(11) NOT NULL,
+  `Value` varchar(255) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `prefered` int(11) NOT NULL DEFAULT 0,
+  `verificat` tinyint(1) NOT NULL DEFAULT 0,
+  `verificat_data` datetime DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `client_email` (`ID_Client`,`Value`),
+  KEY `ID_Client` (`ID_Client`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Registre RGPD: alta, confirmació del correu i baixa, amb la versió de les condicions acceptades
+CREATE TABLE IF NOT EXISTS `Clients_consentiment` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ID_Client` int(11) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `accio` enum('alta','confirmacio','baixa') NOT NULL,
+  `data` datetime NOT NULL DEFAULT current_timestamp(),
+  `versio_condicions` varchar(20) DEFAULT NULL,
+  `hash_condicions` char(64) DEFAULT NULL,
+  `ip` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `ID_Client` (`ID_Client`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Condicions d'ús i protecció de dades per versió i idioma (/condicions); hash = sha256 del contingut
+CREATE TABLE IF NOT EXISTS `Condicions` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `versio` varchar(20) NOT NULL,
+  `idioma` varchar(5) NOT NULL,
+  `titol` varchar(255) NOT NULL,
+  `contingut` mediumtext NOT NULL,
+  `hash` char(64) NOT NULL,
+  `data_publicacio` datetime NOT NULL DEFAULT current_timestamp(),
+  `vigent` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `versio_idioma` (`versio`,`idioma`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Alta pública (altaclient): sol·licituds pendents de confirmar el correu; s'esborren a les 48 h (altaclient/neteja.php)
+CREATE TABLE IF NOT EXISTS `Clients_pendents` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `creat` datetime NOT NULL DEFAULT current_timestamp(),
+  `caduca` datetime NOT NULL,
+  `estat` enum('pendent','creat','caducat') NOT NULL DEFAULT 'pendent',
+  `ID_Client` int(11) DEFAULT NULL,
+  `idioma` varchar(5) DEFAULT NULL,
+  `versio_condicions` varchar(20) NOT NULL,
+  `hash_condicions` char(64) NOT NULL,
+  `ip` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `dades` longtext NOT NULL COMMENT 'JSON amb les dades del formulari',
+  PRIMARY KEY (`ID`),
+  KEY `estat_caduca` (`estat`,`caduca`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `Clients_pendents_email` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ID_pendent` int(10) unsigned NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `principal` tinyint(1) NOT NULL DEFAULT 0,
+  `token_hash` char(64) NOT NULL,
+  `confirmat_data` datetime DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `token_hash` (`token_hash`),
+  KEY `ID_pendent` (`ID_pendent`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Reptes de la prova de treball ja fets servir (un repte només serveix un cop)
+CREATE TABLE IF NOT EXISTS `Clients_altcha_usats` (
+  `challenge` char(64) NOT NULL,
+  `usat` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`challenge`),
+  KEY `usat` (`usat`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- El connector de torns crea Empresa_<ID>_torn per a cada empresa que el fa servir (plugins/torn/torn.php).
 SET FOREIGN_KEY_CHECKS=1;

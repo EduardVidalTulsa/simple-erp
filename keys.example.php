@@ -58,6 +58,16 @@ $usuaris_sense_preus = [];                // usernames that may not open the pri
 // Use a long random value, the same on every shop that shares documents. Empty = plain uuid links (old behaviour).
 $pdf_token_secret = '';
 
+// --- public client sign-up (/altaclient) and e-mailed receipts ---
+// The server that runs the sign-up needs $ALTCHA_KEY (a long random string, at least 32 characters: it signs the
+// proof-of-work challenge that replaces a captcha). Other shops leave it empty and redirect to $altaclient_url.
+// Receipts are only e-mailed to verified addresses and carry an unsubscribe link (altaclient/baixa.php), signed with
+// $pdf_token_secret, so set that too. Clean up expired sign-ups hourly: php web/altaclient/neteja.php
+$ALTCHA_KEY = '';
+$altaclient_url = '';                     // public sign-up address, e.g. https://example.org/altaclient/
+$altaclient_tarifa = 0;                   // price list (tarifa.ID) for new clients; 0 = none
+$altaclient_secrets = '';                 // optional file outside the web root that sets $ALTCHA_KEY instead
+
 // Your own look and files (optional; the code works without them)
 $web_nom = '';                            // site name in the footer links ('' = the host name)
 $mytwitter = $myfacebook = $mytelegram = $myinstagram = '';   // footer social links

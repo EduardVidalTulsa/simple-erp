@@ -39,6 +39,7 @@ require_once('phpgeneral/estil.php');
 require_once('phpgeneral/taula.php');
 require_once('phpgeneral/mysqli.php');
 require_once('phpgeneral/lib.php');
+require_once('phpgeneral/destinataris.php');
 require_once('phpgeneral/etiquetapreu.php');
 require_once('vars.php');
 require '../vendor/autoload.php';
@@ -121,7 +122,9 @@ rm {$_SERVER['DOCUMENT_ROOT']}/pdf/*.log -f;
 		//update pdf_fet aqui
 		$u="UPDATE `$taula` SET `pdf_fet` = '1' WHERE `ID` = '{$pdf['ID']}' AND `ID_tipus_relacio` = '{$pdf['ID_tipus_relacio']}' ";
 		$link->query($u)or die(debugtelegram($_SERVER['HTTP_HOST'].$u.$link->error));
-		if (correuvalid($pdf['email']) and ($pdf['email_enviat']<1)and ($pdf['email_enviat']>-4)){
+		// només als correus verificats del client (principal + còpies de Clients_email); el de la venda no compta si no ho està
+		$dest = tiquet_destinataris($link, $r['ID_client'] ?? 0);
+		if ($dest and ($pdf['email_enviat']<1)and ($pdf['email_enviat']>-4)){
 			$mail = new PHPMailer(true);
 			try {
 				//Server settings
@@ -140,7 +143,14 @@ rm {$_SERVER['DOCUMENT_ROOT']}/pdf/*.log -f;
 	   		 	//Recipients
 	    			$mail->setFrom($empresa['email'], $empresa['Value']);
 	    			//$mail->setFrom($em['user'], $empresa['Value']);
-	    			$mail->addAddress($pdf['email'],urldecode($pdf['fiscal_name']));     // Add a recipient
+	    			foreach ($dest as $k => $d) $mail->addAddress($d, $k ? '' : urldecode($pdf['fiscal_name']));     // destinataris verificats
+				$baixa_html = ''; $baixa_txt = '';
+				foreach ($dest as $d) {
+					$u = tiquet_enllac_baixa($link, $r['ID_client'], $d);
+					if ($u === '') continue;
+					$baixa_html .= '<p style="font-size:12px;color:#666">Per deixar de rebre els tiquets a ' . htmlspecialchars($d) . ': <a href="' . htmlspecialchars($u) . '">donar-se de baixa</a> / Para dejar de recibir los tiques: <a href="' . htmlspecialchars($u) . '">darse de baja</a></p>';
+					$baixa_txt .= "Per deixar de rebre els tiquets a $d / Para dejar de recibir los tiques: $u\n";
+				}
 	    			$mail->addBCC($empresa['email']);
 	    		// Attachments
 	    			$mail->addAttachment("{$_SERVER['DOCUMENT_ROOT']}/pdf/{$pdf['uuid']}.pdf");         // Add attachments
@@ -149,9 +159,11 @@ rm {$_SERVER['DOCUMENT_ROOT']}/pdf/*.log -f;
 				$mail->Subject = 'Enviem '.
 					mysql1r("SELECT `Value` FROM `tipus_relacio` WHERE `ID`='{$pdf['ID_tipus_relacio']}'",$link).": 
 				{$empresa['ID']}.{$pdf['ID']}";
-	    			$mail->Body  = html_relacio($r) ;
+	    			$mail->Body  = html_relacio($r) . $baixa_html;
 				$mail->AltBody = "
 Moltes gràcies per confiar amb nosaltres
+
+$baixa_txt
 L’informem que les seves dades personals, que puguin constar en aquesta comunicació, estan incorporades en un fitxer propietat de {$empresa['Value']}, amb la finalitat d'enviar-li comunicacions de caire comercial o de prestació de serveis. Si desitja exercitar els drets d'accés, rectificació, cancel•lació o oposició pot dirigir-se per escrit a la següent direcció: {$empresa['Direccio']} {$empresa['Poblacio']}  En el cas que no desitgi rebre més comunicacions a través del correu electrònic, pot enviar un missatge a la següent adreça electrònica: {$empresa['email']}
 
 Advertència: 
@@ -182,8 +194,8 @@ La Información incluida en este e-mail es CONFIDENCIAL, siendo para uso exclusi
 		}//fi if correu_valid
 		else { 
 			echo "no mail";
-			if ($pdf['email']=="") debugtelegram("PDF sense correu","{$_SERVER['HTTP_HOST']}",$empresa['telegram_relacions']);
-			else debugtelegram('correu no valid '.$pdf['email'],"{$_SERVER['HTTP_HOST']}");
+			if ($pdf['email']=="" and !$dest) debugtelegram("PDF sense correu","{$_SERVER['HTTP_HOST']}",$empresa['telegram_relacions']);
+			elseif (!$dest) debugtelegram('correu no verificat o client sense correu verificat: '.$pdf['email'].' (client '.($r['ID_client'] ?? 0).')',"{$_SERVER['HTTP_HOST']}");
 			$u="UPDATE `$taula` SET `email_enviat` = '2' WHERE `ID` = '{$pdf['ID']}' AND `ID_tipus_relacio` = '{$pdf['ID_tipus_relacio']}' ";
 			$link->query($u)or die(debugtelegram($_SERVER['HTTP_HOST'].$u.$link->error));
 		}
@@ -352,7 +364,7 @@ while($print=$qprint->fetch_assoc()){
 
 }
 //part dels pdf i mails 
-//$taula=date('Y')."_Empresa_{$empresa['ID']}_pdf";//ara $taula es dinàmic envia tot lo que hi hagi al servidor, segurament acabarem centralitzant aquesta feina a ametlles
+//$taula=date('Y')."_Empresa_{$empresa['ID']}_pdf";//ara $taula es dinàmic envia tot lo que hi hagi al servidor, segurament acabarem centralitzant aquesta feina
 $q="show tables like '%_pdf'";
 $l=$link->query($q);
 while($f=$l->fetch_row()){

@@ -129,8 +129,8 @@ function scale_plugins_mostra($link) {
 		$ginys[] = ob_get_clean();
 	}
 	if(!$ginys) return;
-	echo '<div id="scale-plugins" style="position:fixed;right:8px;bottom:18px;z-index:99999;display:flex;'
-		. 'flex-direction:column;align-items:flex-end;gap:8px;user-select:none">' . implode('', $ginys) . '</div>';
+	echo '<div id="scale-plugins" style="position:fixed;left:8px;bottom:18px;z-index:99999;display:flex;'
+		. 'flex-direction:column;align-items:flex-start;gap:8px;user-select:none">' . implode('', $ginys) . '</div>';
 }
 
 /** Dona als connectors de l'usuari l'oportunitat d'atendre un codi del camp de codi de scale */

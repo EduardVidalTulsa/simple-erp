@@ -9,6 +9,8 @@ if [ ! -f /var/www/conf/keys.php ]; then
         -e "s/^\$mypassword = .*/\$mypassword = '${DB_PASSWORD:-simple_erp}';/" \
         -e "s/^\$mydatabase = .*/\$mydatabase = '${DB_NAME:-simple_erp}';/" \
         -e "s/^\$empresa_nom = .*/\$empresa_nom = '${SHOP_NAME:-Example Shop}';/" \
+        -e "s/^\$ALTCHA_KEY = .*/\$ALTCHA_KEY = '$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')';/" \
+        -e "s/^\$pdf_token_secret = .*/\$pdf_token_secret = '$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')';/" \
         /var/www/keys.example.php > /var/www/conf/keys.php
     echo "simple-erp: created conf/keys.php, edit it for printers, Telegram, e-mail..."
 fi

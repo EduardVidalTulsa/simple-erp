@@ -1,6 +1,6 @@
 {
   "titol": "Torns",
-  "descripcio": "Sistema de torns per a una parada amb cua. Un mòbil o tauleta en mode quiosc (client.php?token=…) fa de botó per als clients: imprimeix un tiquet «Torn K, teniu davant M persones» a la impressora de tiquets d'aquest servidor. A scale, la dependenta veu per quin número anem i el canvia amb + i − o teclejant ++ (següent) i +- (enrere). La numeració torna a començar cada dia i va de 1 a 99. Activa'l només a l'usuari de la bàscula que porta la cua.",
+  "descripcio": "Sistema de torns per a una parada amb cua. Un mòbil o tauleta en mode quiosc (client.php?token=…) fa de botó per als clients: imprimeix un tiquet «Torn K, teniu davant M persones» a la impressora de tiquets d'aquest servidor. A sota del botó hi ha un QR (canvia cada dia) perquè el client agafi torn des del seu mòbil sense paper: la pàgina li va dient quanta gent té davant. A scale, la dependenta veu per quin número anem i el canvia amb + i − o teclejant ++ (següent) i +- (enrere). La numeració torna a començar cada dia i va de 1 a 999. Amb el botó ON/OFF del giny s'encenen o s'apaguen els torns: apagats, el quiosc mostra el QR d'alta de client en lloc del botó. Activa'l només a l'usuari de la bàscula que porta la cua.",
   "abast": "usuari",
   "per_defecte": true,
   "config": {
@@ -9,6 +9,18 @@
       "per_defecte": "",
       "ajuda": "Clau de la pàgina dels clients: https://<servidor>/plugins/torn/client.php?token=…",
       "etiqueta": "Clau de la pàgina dels clients"
+    },
+    "url_publica": {
+      "tipus": "text",
+      "per_defecte": "",
+      "ajuda": "Adreça pública d'aquest servidor per al QR del mòbil dels clients (p. ex. https://botiga.example.org). Buit: la mateixa adreça amb què s'obre el quiosc.",
+      "etiqueta": "Adreça pública per al QR"
+    },
+    "url_alta": {
+      "tipus": "text",
+      "per_defecte": "",
+      "ajuda": "Adreça del formulari d'alta de client que surt al quiosc quan els torns estan apagats. Buit: /altaclient/ d'aquest mateix servidor",
+      "etiqueta": "Adreça de l'alta de client"
     }
   },
   "enllac_usuari": "/plugins/torn/client.php?token={token}"

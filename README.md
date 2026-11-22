@@ -17,12 +17,15 @@ family business with several shops; this is a cleaned-up copy of its code.
 | `web/preus/` | Price management: product records, cost price and four price levels, families, VAT, price history |
 | `web/relacions/` | Sales documents: delivery notes, invoices, quotes, orders, inventories, transfers; PDF with LaTeX, links by e-mail, SMS or WhatsApp |
 | `web/makevoucher/` | Gift/discount vouchers: create a voucher with a one-time QR code, print it on the receipt printer, redeem it at the scale's subtotal screen (capped to what's left to pay; the rest is paid as usual). Only on the central site when there are several (see below) |
-| `web/altaclient/` | Public new-client sign-up form (with a captcha); users with permission can also see and edit the client list |
+| `web/altaclient/`, `web/condicions/` | Public new-client sign-up: the client accepts the terms (`/condicions`, versioned in the `Condicions` table) and confirms each e-mail address by a link before the client is created; a proof-of-work challenge replaces the captcha, unconfirmed requests are deleted after 48 h (`php web/altaclient/neteja.php` hourly) and every step is logged in `Clients_consentiment`. Logged-in staff see and edit the client list instead |
 | `web/plugins/`, `web/admin/` | Plugins (door switch, queue tickets, vouchers) that are turned on and configured at `/admin` (see below) |
 | `web/pdf/` | Public access to the generated PDFs |
 | `web/index.html` | Start page |
 | `hardware/` | Shell scripts that read a physical serial-port scale and feed its weight into the `ultimpes` table that `web/scale/` polls; adapt the serial protocol to your own scale model |
 
+Receipts are e-mailed only to the client's verified addresses (main one plus the copies in `Clients_email`),
+each with a signed unsubscribe link (`altaclient/baixa.php`, needs `$pdf_token_secret` and the central's
+`Empresa.url_seu` or `$altaclient_url`).
 Background jobs (labels, PDFs, Telegram and e-mail notifications) run in `web/scale/p.php`,
 which must be called every few seconds by one machine (the Docker `worker` service or the
 `simple-erp-worker` systemd unit do it).
@@ -62,7 +65,7 @@ are stored in the `plugin` and `plugin_usuari` tables (created automatically). I
 | Plugin | What it does |
 |---|---|
 | `porta` (per user) | Floating switch on the scale to lock/unlock a door through a Shelly Gen2+ relay on the local network (relay on = unlocked). Setting: the Shelly's address, e.g. `192.0.2.6` |
-| `torn` (per user) | Queue tickets for a busy counter. An old phone or tablet in kiosk mode opens `/plugins/torn/client.php?token=…` (the link is shown at `/admin`): customers tap *Agafa torn* and the scale's receipt printer prints "Torn K – M people ahead"; the page shows how many people are waiting and keeps the screen on (Wake Lock, needs HTTPS). On the scale, staff see the current number and move it with + and −, or by typing `++` (next) and `+-` (back) in the code field. Numbers restart every day and go from 1 to 99; the counter is stored in `Empresa_<ID>_torn` |
+| `torn` (per user) | Queue tickets for a busy counter. An old phone or tablet in kiosk mode opens `/plugins/torn/client.php?token=…` (the link is shown at `/admin`): customers tap *Agafa torn* and the scale's receipt printer prints "Torn K – M people ahead"; the page shows how many people are waiting and keeps the screen on (Wake Lock, needs HTTPS). On the scale, staff see the current number and move it with + and −, or by typing `++` (next) and `+-` (back) in the code field. Under the button a QR code (it changes every day) lets customers take a number on their own phone without paper; their page shows when they took it and how many people are ahead, refreshing every 10 s. An ON/OFF button on the scale's widget stops handing out numbers: the kiosk then shows a QR code to the client sign-up. Numbers restart every day and go from 1 to 999; the counter is stored in `Empresa_<ID>_torn`. Settings: public address for the QR (if the kiosk opens the server by a LAN address) and sign-up address |
 | `voucher` (whole server, on by default) | The gift/discount vouchers above. Turning it off disables `/makevoucher` and voucher redemption at the scale. Settings: default expiry in days and the thank-you text printed on the voucher |
 
 ## Quick start with Docker
@@ -134,7 +137,9 @@ volum `config`.
 **Mòduls:** `scale` (bàscula, tiquets, etiquetes, tancament de caixa, fitxatge, CashKeeper),
 `preus` (fitxes, tarifes, famílies, IVA, historial), `relacions` (albarans, factures,
 pressupostos… amb PDF), `makevoucher` (xecs regal/descompte amb QR d'un sol ús) i `altaclient`
-(alta pública de clients, amb captcha). Les feines de fons les fa `scale/p.php`, que una sola
+(alta pública de clients: accepta les condicions de `/condicions` i confirma cada correu per un enllaç;
+les sol·licituds sense confirmar s'esborren a les 48 h amb `php web/altaclient/neteja.php` cada hora).
+Els tiquets només s'envien per correu a adreces verificades i porten un enllaç de baixa. Les feines de fons les fa `scale/p.php`, que una sola
 màquina ha de cridar cada pocs segons. A `hardware/` hi ha els scripts que llegeixen una bàscula
 física per port sèrie i n'alimenten el pes a la taula `ultimpes`.
 
@@ -144,7 +149,8 @@ N'hi ha de tot el servidor i d'usuari de bàscula. Inclosos: `porta` (interrupto
 bàscula per bloquejar una porta amb un Shelly Gen2+), `torn` (torns per a una parada amb cua: un
 mòbil vell en mode quiosc fa de botó per als clients i imprimeix «Torn K, teniu davant M
 persones»; a la bàscula es passa de torn amb + i − o teclejant `++` i `+-`; cada dia torna a
-començar, de 1 a 99) i `voucher` (els xecs regal; desactivat, no se'n poden crear ni cobrar).
+començar, de 1 a 999; un QR diari deixa agafar torn des del mòbil del client sense paper, i amb el
+botó ON/OFF del giny s'aturen els torns i el quiosc mostra el QR d'alta de client) i `voucher` (els xecs regal; desactivat, no se'n poden crear ni cobrar).
 Amb un servidor per seu, els xecs es creen a la central i cal portar la taula `Empresa_N_voucher`
 a cada seu (i retornar-ne els cobrats) amb la vostra pròpia sincronització.
 

@@ -29,7 +29,10 @@ if [ ! -f keys.php ]; then
                 GRANT ALL ON $DB.* TO '$DB'@'localhost';"
     mariadb "$DB" < db/schema.sql
     mariadb "$DB" < db/demo.sql
-    sed -e "s/^\$mypassword = .*/\$mypassword = '$PASS';/" keys.example.php > keys.php
+    sed -e "s/^\$mypassword = .*/\$mypassword = '$PASS';/" \
+        -e "s/^\$ALTCHA_KEY = .*/\$ALTCHA_KEY = '$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')';/" \
+        -e "s/^\$pdf_token_secret = .*/\$pdf_token_secret = '$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')';/" \
+        keys.example.php > keys.php
     chown root:www-data keys.php; chmod 640 keys.php
     echo "database created; configuration in $DEST/keys.php"
 fi

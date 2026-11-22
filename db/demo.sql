@@ -70,6 +70,12 @@ INSERT IGNORE INTO dealers (ID, Value, hidden_user) VALUES (0, 'No dealer', 'adm
 INSERT IGNORE INTO botigues (ID, Value, Direccio) VALUES (1, 'Example Shop', 'Example Street 1');
 INSERT IGNORE INTO Clients (ID, Value, fiscal_address, Poblacio, NIF, bool_Active) VALUES (1, 'Generic customer', '', '', '', 1);
 
+-- Example terms for the public sign-up (/condicions, /altaclient). Replace them with your own text: the hash
+-- identifies the exact version every client accepted.
+SET @cond = '<p>Example terms of use and privacy notice. Write here who keeps the data, what for, for how long and how to unsubscribe.</p>';
+INSERT IGNORE INTO Condicions (versio, idioma, titol, contingut, hash) VALUES ('1', 'ca', 'Condicions i protecció de dades', @cond, SHA2(@cond, 256)),
+       ('1', 'en', 'Terms and privacy', @cond, SHA2(@cond, 256));
+
 INSERT IGNORE INTO tarifes (ID, data_hora, user, id_dealer, id_familia, bool_in_bulk, cost_price, pvp, pvpi, pv1, pv1i, pv2, pv2i, pv3, pv3i, pv4, pv4i, historic, ultimpreu, tipusiva)
 VALUES (1, '2020-01-01 00:00:00', 'admin', 0, 1, 1, 10.00, 18.00, 1.80, 15.00, 1.50, 13.00, 1.30, 12.00, 1.20, 11.00, 1.10, 1, 1, 0),
        (2, '2020-01-01 00:00:00', 'admin', 0, 1, 1, 12.00, 22.00, 1.83, 18.00, 1.50, 16.00, 1.33, 14.50, 1.21, 13.50, 1.13, 1, 1, 0),
