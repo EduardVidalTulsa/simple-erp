@@ -20,7 +20,7 @@ function formulari_altaclient($r=false){
 	$eemail = htmlspecialchars((string)($_REQUEST['email'] ?? ''), ENT_QUOTES);
 $web="
 <div class='register_form'><form ACTION =\"{$s['app']['uri']}\" METHOD=\"POST\">
-<input type=text name=\"Value\"  MAXLENGTH=30 size=10  id=\"Value\" value=\"{$evalue}\" placeholder=\" Raó social, Cognoms, Nom ex: Fruits del Pi SL / Pi i Noguera, Pere \" class=\"form-control\" autofocus autocomplete=\"off\"
+<input type=text name=\"Value\"  MAXLENGTH=30 size=10  id=\"Value\" value=\"{$evalue}\" placeholder=\" Raó social, Cognoms, Nom ex: Fruits Secs Tulsà SC / Pi i Noguera, Pere \" class=\"form-control\" autofocus autocomplete=\"off\"
 style=\" width: 99%; height: 40px; font-size:{$fontsize}px; text-align: left;\">
 ".($r?($r['Value']?'':'<br/>Invalid user'.(preg_match($preg_net,$_REQUEST['Value'])?':'.$evalue:' due invalid characters')):'')."
 <input type=text name=\"fiscal_address\"  MAXLENGTH=30 size=10  id=\"fiscal_address\" value=\"{$efiscal_address}\" placeholder=\"Direcció fiscal ex: C/Santa Eugènia 163\" class=\"form-control\"
